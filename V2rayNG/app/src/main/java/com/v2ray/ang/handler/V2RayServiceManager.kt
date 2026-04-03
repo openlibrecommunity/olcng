@@ -122,9 +122,7 @@ object V2RayServiceManager {
 //        if (!result.status) return
 
         if (MmkvManager.decodeSettingsBool(AppConfig.PREF_PROXY_SHARING)) {
-            context.toast(R.string.toast_warning_pref_proxysharing_short)
-        } else {
-            context.toast(R.string.toast_services_start)
+            Log.i(AppConfig.TAG, "StartCore-Manager: proxy sharing enabled")
         }
 
         val isVpnMode = SettingsManager.isVpnMode()

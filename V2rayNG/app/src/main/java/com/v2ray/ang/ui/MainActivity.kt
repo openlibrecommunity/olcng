@@ -155,10 +155,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 val firstServer = mainViewModel.serversCache.firstOrNull()
                 if (firstServer != null) {
                     MmkvManager.setSelectServer(firstServer.guid)
-                    toast("Подключаемся к быстрейшему серверу")
+                    showStatus("Подключаемся к быстрейшему серверу")
                     startV2RayWithPermission()
                 } else {
-                    toast("Серверы не найдены!")
+                    showStatus("Серверы не найдены!")
                 }
             }
         }
@@ -211,7 +211,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             V2RayServiceManager.stopVService(this)
         }
         
-        toast("Выполняется замер задержки. Ожидаем завершения...")
+        showStatus("Выполняется замер задержки. Ожидаем завершения...")
         isLiteTesting = true
         mainViewModel.testAllRealPing()
     }
@@ -231,7 +231,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
     private fun startV2Ray() {
         if (MmkvManager.getSelectServer().isNullOrEmpty()) {
-            toast(R.string.title_file_chooser)
+            showStatus(R.string.title_file_chooser)
             return
         }
         V2RayServiceManager.startVService(this)
@@ -247,9 +247,27 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         }
     }
 
+    private var statusResetJob: kotlinx.coroutines.Job? = null
+
     private fun setTestState(content: String?) {
         binding.tvTestState.text = content
     }
+
+    /** Show a temporary message in the status bar, then revert to connection state */
+    private fun showStatus(message: String) {
+        statusResetJob?.cancel()
+        binding.tvTestState.text = message
+        statusResetJob = lifecycleScope.launch {
+            delay(3000)
+            val isRunning = mainViewModel.isRunning.value == true
+            binding.tvTestState.text = getString(
+                if (isRunning) R.string.connection_connected
+                else R.string.connection_not_connected
+            )
+        }
+    }
+
+    private fun showStatus(resId: Int) = showStatus(getString(resId))
 
     private  fun applyRunningState(isLoading: Boolean, isRunning: Boolean) {
         if (isLoading) {
@@ -291,7 +309,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
 
         R.id.real_ping_all -> {
-            toast(getString(R.string.connection_test_testing_count, mainViewModel.serversCache.count()))
+            showStatus(getString(R.string.connection_test_testing_count, mainViewModel.serversCache.count()))
             mainViewModel.testAllRealPing()
             true
         }
@@ -358,18 +376,18 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 withContext(Dispatchers.Main) {
                     when {
                         count > 0 -> {
-                            toast(getString(R.string.title_import_config_count, count))
+                            showStatus(getString(R.string.title_import_config_count, count))
                             mainViewModel.reloadServerList()
                         }
 
                         countSub > 0 -> setupGroupTab()
-                        else -> toastError(R.string.toast_failure)
+                        else -> showStatus(getString(R.string.toast_failure))
                     }
                     hideLoading()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    toastError(R.string.toast_failure)
+                    showStatus(getString(R.string.toast_failure))
                     hideLoading()
                 }
                 Log.e(AppConfig.TAG, "Failed to import batch config", e)
@@ -402,11 +420,11 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             delay(500L)
             launch(Dispatchers.Main) {
                 if (result.successCount + result.failureCount + result.skipCount == 0) {
-                    toast(R.string.title_update_subscription_no_subscription)
+                    showStatus(R.string.title_update_subscription_no_subscription)
                 } else if (result.successCount > 0 && result.failureCount + result.skipCount == 0) {
-                    toast(getString(R.string.title_update_config_count, result.configCount))
+                    showStatus(getString(R.string.title_update_config_count, result.configCount))
                 } else {
-                    toast(
+                    showStatus(
                         getString(
                             R.string.title_update_subscription_result,
                             result.configCount, result.successCount, result.failureCount, result.skipCount
@@ -428,9 +446,9 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             val ret = mainViewModel.exportAllServer()
             launch(Dispatchers.Main) {
                 if (ret > 0)
-                    toast(getString(R.string.title_export_config_count, ret))
+                    showStatus(getString(R.string.title_export_config_count, ret))
                 else
-                    toastError(R.string.toast_failure)
+                    showStatus(getString(R.string.toast_failure))
                 hideLoading()
             }
         }
@@ -444,7 +462,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                     val ret = mainViewModel.removeAllServer()
                     launch(Dispatchers.Main) {
                         mainViewModel.reloadServerList()
-                        toast(getString(R.string.title_del_config_count, ret))
+                        showStatus(getString(R.string.title_del_config_count, ret))
                         hideLoading()
                     }
                 }
@@ -463,7 +481,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                     val ret = mainViewModel.removeDuplicateServer()
                     launch(Dispatchers.Main) {
                         mainViewModel.reloadServerList()
-                        toast(getString(R.string.title_del_duplicate_config_count, ret))
+                        showStatus(getString(R.string.title_del_duplicate_config_count, ret))
                         hideLoading()
                     }
                 }
@@ -482,7 +500,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                     val ret = mainViewModel.removeInvalidServer()
                     launch(Dispatchers.Main) {
                         mainViewModel.reloadServerList()
-                        toast(getString(R.string.title_del_config_count, ret))
+                        showStatus(getString(R.string.title_del_config_count, ret))
                         hideLoading()
                     }
                 }
@@ -537,13 +555,13 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     private fun locateSelectedServer() {
         val targetSubscriptionId = mainViewModel.findSubscriptionIdBySelect()
         if (targetSubscriptionId.isNullOrEmpty()) {
-            toast(R.string.title_file_chooser)
+            showStatus(R.string.title_file_chooser)
             return
         }
 
         val targetGroupIndex = groupPagerAdapter.groups.indexOfFirst { it.id == targetSubscriptionId }
         if (targetGroupIndex < 0) {
-            toast(R.string.toast_server_not_found_in_group)
+            showStatus(R.string.toast_server_not_found_in_group)
             return
         }
 

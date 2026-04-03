@@ -104,7 +104,9 @@
                                 app:backgroundTint="@color/color_fab_inactive"
                                 app:fabSize="mini"
                                 app:maxImageSize="24dp"
-                                android:elevation="0dp" />
+                                app:elevation="0dp"
+                                app:pressedTranslationZ="0dp"
+                                app:hoveredFocusedTranslationZ="0dp" />
 
                             <com.google.android.material.floatingactionbutton.FloatingActionButton
                                 android:id="@+id/fab"
@@ -118,7 +120,9 @@
                                 android:src="@drawable/ic_play_24dp"
                                 app:tint="@color/colorWhite"
                                 app:fabSize="mini"
-                                android:elevation="0dp" />
+                                app:elevation="0dp"
+                                app:pressedTranslationZ="0dp"
+                                app:hoveredFocusedTranslationZ="0dp" />
 
                         </LinearLayout>
                     </LinearLayout>

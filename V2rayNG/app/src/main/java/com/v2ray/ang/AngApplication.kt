@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.multidex.MultiDexApplication
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.google.android.material.color.DynamicColors
 import com.tencent.mmkv.MMKV
 import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.handler.SettingsManager
@@ -31,6 +32,8 @@ class AngApplication : MultiDexApplication() {
      */
     override fun onCreate() {
         super.onCreate()
+        // Apply Material You dynamic colors (Android 12+)
+        DynamicColors.applyToActivitiesIfAvailable(this)
 
         val mmkvDir = java.io.File(filesDir, "mmkv")
         if (!java.io.File(mmkvDir, "MAIN").exists()) {

@@ -53,6 +53,23 @@
         <!-- Status bar and navigation bar - system bars -->
         <item name="android:statusBarColor">@color/md_theme_surface</item>
         <item name="android:navigationBarColor">@color/md_theme_surface</item>
+
+        <!-- Typography: use Roboto (Google's Material font) everywhere -->
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:editTextStyle">@style/RobotoEditTextStyle</item>
+        <item name="alertDialogTheme">@style/RobotoAlertDialogTheme</item>
+        <item name="android:dialogTheme">@style/RobotoAlertDialogTheme</item>
+    </style>
+
+    <style name="RobotoEditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="RobotoAlertDialogTheme" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
     </style>
 
     <!-- Day/Night theme: inherit common values and set light-mode-specific items -->

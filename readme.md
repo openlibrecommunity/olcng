@@ -13,7 +13,7 @@
 
 
 ## About
-olcng - is a free VPN, fork of v2rayNG
+olcNG - is a free VPN, fork of v2rayNG
  
 <div align="center">
 
