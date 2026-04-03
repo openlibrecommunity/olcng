@@ -56,10 +56,6 @@ class PerAppProxyActivity : BaseActivity() {
             MmkvManager.encodeSettings(AppConfig.PREF_BYPASS_APPS, isChecked)
         }
         binding.switchBypassApps.isChecked = MmkvManager.decodeSettingsBool(AppConfig.PREF_BYPASS_APPS, false)
-
-        binding.layoutSwitchBypassAppsTips.setOnClickListener {
-            Toasty.info(this, R.string.summary_pref_per_app_proxy, Toast.LENGTH_LONG, true).show()
-        }
     }
 
     private fun initList() {

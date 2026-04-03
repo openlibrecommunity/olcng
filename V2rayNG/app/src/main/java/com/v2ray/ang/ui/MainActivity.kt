@@ -82,6 +82,16 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         binding.navView.setNavigationItemSelectedListener(this)
+
+        // Bottom drawer buttons
+        findViewById<android.widget.TextView>(R.id.drawer_settings)?.setOnClickListener {
+            requestActivityLauncher.launch(Intent(this, SettingsActivity::class.java))
+            binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
+        }
+        findViewById<android.widget.TextView>(R.id.drawer_per_app)?.setOnClickListener {
+            requestActivityLauncher.launch(Intent(this, PerAppProxyActivity::class.java))
+            binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
+        }
         fun removeUnderlines(textView: android.widget.TextView?) {
             if (textView == null) return
             textView.movementMethod = android.text.method.LinkMovementMethod.getInstance()

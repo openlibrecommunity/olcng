@@ -61,65 +61,70 @@
                         android:layout_weight="1" />
 
                     <LinearLayout
-                        android:id="@+id/layout_test"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/view_height_dp64"
-                        android:clickable="true"
-                        android:contentDescription="@string/connection_test_pending"
-                        android:focusable="true"
-                        android:nextFocusLeft="@+id/view_pager"
-                        android:nextFocusRight="@+id/fab"
+                        android:layout_height="wrap_content"
                         android:orientation="vertical">
 
                         <View
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:background="@color/divider_color_light" />
 
-                        <TextView
-                            android:id="@+id/tv_test_state"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:gravity="start|center"
-                            android:maxLines="2"
-                            android:minLines="1"
-                            android:paddingStart="@dimen/padding_spacing_dp16"
-                            android:text="@string/connection_test_pending"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+                        <LinearLayout
+                            android:id="@+id/layout_test"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/view_height_dp64"
+                            android:clickable="true"
+                            android:contentDescription="@string/connection_test_pending"
+                            android:focusable="true"
+                            android:nextFocusLeft="@+id/view_pager"
+                            android:nextFocusRight="@+id/fab"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
 
+                            <TextView
+                                android:id="@+id/tv_test_state"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="start|center_vertical"
+                                android:maxLines="2"
+                                android:minLines="1"
+                                android:paddingStart="@dimen/padding_spacing_dp16"
+                                android:text="@string/connection_test_pending"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                                android:id="@+id/btn_summary_lite"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:src="@drawable/ic_lite_bolt"
+                                app:tint="@color/colorWhite"
+                                app:backgroundTint="@color/color_fab_inactive"
+                                app:fabSize="mini"
+                                app:maxImageSize="24dp"
+                                android:elevation="0dp" />
+
+                            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                                android:id="@+id/fab"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="@dimen/padding_spacing_dp16"
+                                android:clickable="true"
+                                android:contentDescription="@string/tasker_start_service"
+                                android:focusable="true"
+                                android:nextFocusLeft="@+id/layout_test"
+                                android:src="@drawable/ic_play_24dp"
+                                app:tint="@color/colorWhite"
+                                app:fabSize="mini"
+                                android:elevation="0dp" />
+
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginEnd="@dimen/padding_spacing_dp16"
-                    android:layout_marginBottom="@dimen/view_height_dp36"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical">
 
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/btn_summary_lite"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:src="@drawable/ic_lite_bolt"
-                        app:tint="@color/colorWhite"
-                        app:backgroundTint="@color/color_fab_inactive" />
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/fab"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:contentDescription="@string/tasker_start_service"
-                        android:focusable="true"
-                        android:nextFocusLeft="@+id/layout_test"
-                        android:src="@drawable/ic_play_24dp"
-                        app:tint="@color/colorWhite"
-                        app:useCompatPadding="true" />
-                </LinearLayout>
             </androidx.coordinatorlayout.widget.CoordinatorLayout>
         </RelativeLayout>
     </LinearLayout>
@@ -136,14 +141,47 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            app:headerLayout="@layout/nav_header"
-            app:menu="@menu/menu_drawer" />
+            app:headerLayout="@layout/nav_header" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
+
+            <TextView
+                android:id="@+id/drawer_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:text="@string/title_settings"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/drawer_per_app"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="16dp"
+                android:text="@string/per_app_proxy_settings"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="12dp"
+                android:background="@color/divider_color_light" />
 
             <TextView
                 android:id="@+id/tv_forked"
