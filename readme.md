@@ -13,14 +13,7 @@
 
 
 ## About
-olcng - is
-<details>
-<summary>Template</summary>
-
-**Template:** template
-
-</details>
-
+olcng - is a free VPN, fork of v2rayNG
  
 <div align="center">
 
