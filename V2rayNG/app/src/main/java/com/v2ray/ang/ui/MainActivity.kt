@@ -82,6 +82,8 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         binding.navView.setNavigationItemSelectedListener(this)
+        findViewById<android.widget.TextView>(R.id.tv_forked)?.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+        findViewById<android.widget.TextView>(R.id.tv_developed)?.movementMethod = android.text.method.LinkMovementMethod.getInstance()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -120,10 +122,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 val firstServer = mainViewModel.serversCache.firstOrNull()
                 if (firstServer != null) {
                     MmkvManager.setSelectServer(firstServer.guid)
-                    toast("ЛАЙТ: Подключаемся к быстрейшему серверу")
+                    toast("Подключаемся к быстрейшему серверу")
                     startV2RayWithPermission()
                 } else {
-                    toast("ЛАЙТ: Серверы не найдены!")
+                    toast("Серверы не найдены!")
                 }
             }
         }
@@ -176,7 +178,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             V2RayServiceManager.stopVService(this)
         }
         
-        toast("ЛАЙТ: Выполняется замер задержки. Ожидаем завершения...")
+        toast("Выполняется замер задержки. Ожидаем завершения...")
         isLiteTesting = true
         mainViewModel.testAllRealPing()
     }
@@ -255,55 +257,14 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
 
 
-        R.id.export_all -> {
-            exportAll()
-            true
-        }
-
-        R.id.ping_all -> {
-            toast(getString(R.string.connection_test_testing_count, mainViewModel.serversCache.count()))
-            mainViewModel.testAllTcping()
-            true
-        }
-
         R.id.real_ping_all -> {
             toast(getString(R.string.connection_test_testing_count, mainViewModel.serversCache.count()))
             mainViewModel.testAllRealPing()
             true
         }
 
-        R.id.service_restart -> {
-            restartV2Ray()
-            true
-        }
-
-        R.id.del_all_config -> {
-            delAllConfig()
-            true
-        }
-
-        R.id.del_duplicate_config -> {
-            delDuplicateConfig()
-            true
-        }
-
-        R.id.del_invalid_config -> {
-            delInvalidConfig()
-            true
-        }
-
-        R.id.sort_by_test_results -> {
-            sortByTestResults()
-            true
-        }
-
         R.id.sub_update -> {
             importConfigViaSub()
-            true
-        }
-
-        R.id.locate_selected_config -> {
-            locateSelectedServer()
             true
         }
 
@@ -589,10 +550,8 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         when (item.itemId) {
-            R.id.sub_setting -> requestActivityLauncher.launch(Intent(this, SubSettingActivity::class.java))
             R.id.per_app_proxy_settings -> requestActivityLauncher.launch(Intent(this, PerAppProxyActivity::class.java))
             R.id.settings -> requestActivityLauncher.launch(Intent(this, SettingsActivity::class.java))
-            R.id.backup_restore -> requestActivityLauncher.launch(Intent(this, BackupActivity::class.java))
         }
 
         binding.drawerLayout.closeDrawer(GravityCompat.START)

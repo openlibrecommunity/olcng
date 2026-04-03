@@ -6,6 +6,8 @@
     <string name="navigation_drawer_open">Открыть панель навигации</string>
     <string name="navigation_drawer_close">Закрыть панель навигации</string>
     <string name="migration_success">Успешный перенос данных!</string>
+    <string name="drawer_forked_text"><![CDATA[forked from <a href="https://github.com/2dust/v2rayng">V2RayNG</a>]]></string>
+    <string name="drawer_developed_text"><![CDATA[developed by developers from <a href="https://t.me/openlibrecommunity">openlibrecommunity</a>]]></string>
     <string name="action_stop_service">Остановить службу</string>
     <string name="migration_fail">Перенос данных не выполнен!</string>
     <string name="pull_down_to_refresh">Потяните вниз для обновления!</string>
@@ -21,7 +23,7 @@
     <string name="toast_services_failure">Сбой при запуске служб</string>
 
     <!--ServerActivity-->
-    <string name="title_server">OlcNG by zarazaex</string>
+    <string name="title_server">Olcng</string>
     <string name="menu_item_add_config">Добавить профиль</string>
     <string name="menu_item_save_config">Сохранить профиль</string>
     <string name="menu_item_edit_config">Изменить профиль</string>
