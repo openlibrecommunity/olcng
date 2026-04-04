@@ -221,9 +221,27 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             V2RayServiceManager.stopVService(this)
         }
         
-        showStatus("Выполняется замер задержки. Ожидаем завершения...")
+        showStatus("Обновление профилей...")
+        showLoading()
         isLiteTesting = true
-        mainViewModel.testAllRealPing()
+        
+        lifecycleScope.launch(Dispatchers.IO) {
+            val result = mainViewModel.updateConfigViaSubAll()
+            delay(500L)
+            launch(Dispatchers.Main) {
+                if (result.configCount > 0) {
+                    mainViewModel.reloadServerList()
+                    showStatus("Обновлено ${result.configCount} профилей. Запуск теста...")
+                } else {
+                    showStatus("Запуск теста...")
+                }
+                hideLoading()
+                
+                delay(500L)
+                showStatus("Выполняется замер задержки. Ожидаем завершения...")
+                mainViewModel.testAllRealPing()
+            }
+        }
     }
 
     private fun startV2RayWithPermission() {
