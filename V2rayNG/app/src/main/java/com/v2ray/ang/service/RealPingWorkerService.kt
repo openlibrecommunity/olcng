@@ -27,7 +27,7 @@ class RealPingWorkerService(
 ) {
     private val job = SupervisorJob()
     private val cpu = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
-    private val dispatcher = Executors.newFixedThreadPool(cpu * 4).asCoroutineDispatcher()
+    private val dispatcher = Executors.newFixedThreadPool(cpu * 16).asCoroutineDispatcher()
     private val scope = CoroutineScope(job + dispatcher + CoroutineName("RealPingBatchWorker"))
 
     private val runningCount = AtomicInteger(0)
@@ -41,6 +41,8 @@ class RealPingWorkerService(
                 try {
                     val result = startRealPing(guid)
                     MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_SUCCESS, Pair(guid, result))
+                } catch (e: Exception) {
+                    MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_SUCCESS, Pair(guid, -1L))
                 } finally {
                     val count = totalCount.decrementAndGet()
                     val left = runningCount.decrementAndGet()
