@@ -1,9 +1,9 @@
-package com.v2ray.ang.fmt
+package xyz.zarazaex.olc.fmt
 
 import android.util.Base64
 import android.util.Log
-import com.v2ray.ang.enums.EConfigType
-import com.v2ray.ang.dto.ProfileItem
+import xyz.zarazaex.olc.enums.EConfigType
+import xyz.zarazaex.olc.dto.ProfileItem
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

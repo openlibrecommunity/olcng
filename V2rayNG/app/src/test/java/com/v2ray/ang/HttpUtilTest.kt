@@ -1,6 +1,6 @@
-package com.v2ray.ang
+package xyz.zarazaex.olc
 
-import com.v2ray.ang.util.HttpUtil
+import xyz.zarazaex.olc.util.HttpUtil
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

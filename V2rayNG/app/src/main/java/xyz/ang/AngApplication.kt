@@ -1,0 +1,67 @@
+package xyz.zarazaex.olc
+
+import android.content.Context
+import androidx.multidex.MultiDexApplication
+import androidx.work.Configuration
+import androidx.work.WorkManager
+import com.google.android.material.color.DynamicColors
+import com.tencent.mmkv.MMKV
+import xyz.zarazaex.olc.AppConfig.ANG_PACKAGE
+import xyz.zarazaex.olc.handler.SettingsManager
+
+class AngApplication : MultiDexApplication() {
+    companion object {
+        lateinit var application: AngApplication
+    }
+
+    /**
+     * Attaches the base context to the application.
+     * @param base The base context.
+     */
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+        application = this
+    }
+
+    private val workManagerConfiguration: Configuration = Configuration.Builder()
+        .setDefaultProcessName("${ANG_PACKAGE}:bg")
+        .build()
+
+    /**
+     * Initializes the application.
+     */
+    override fun onCreate() {
+        super.onCreate()
+        // Apply Material You dynamic colors (Android 12+)
+        DynamicColors.applyToActivitiesIfAvailable(this)
+
+        val mmkvDir = java.io.File(filesDir, "mmkv")
+        if (!java.io.File(mmkvDir, "MAIN").exists()) {
+            mmkvDir.mkdirs()
+            try {
+                assets.list("mmkv")?.forEach { filename ->
+                    assets.open("mmkv/$filename").use { inputStream ->
+                        java.io.File(mmkvDir, filename).outputStream().use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        MMKV.initialize(this)
+
+        // Initialize WorkManager with the custom configuration
+        WorkManager.initialize(this, workManagerConfiguration)
+
+        // Ensure critical preference defaults are present in MMKV early
+        SettingsManager.initApp(this)
+        SettingsManager.setNightMode()
+
+        es.dmoral.toasty.Toasty.Config.getInstance()
+            .setGravity(android.view.Gravity.BOTTOM, 0, 300)
+            .apply()
+    }
+}
