@@ -11,8 +11,8 @@
         <!--suppress AndroidDomInspection -->
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="com.v2ray.ang.ui.ScSwitchActivity"
-            android:targetPackage="com.v2ray.ang.fdroid" />
+            android:targetClass="xyz.zarazaex.olc.ui.ScSwitchActivity"
+            android:targetPackage="xyz.zarazaex.olc.fdroid" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
     <shortcut
@@ -26,8 +26,8 @@
         <!--suppress AndroidDomInspection -->
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="com.v2ray.ang.ui.ScScannerActivity"
-            android:targetPackage="com.v2ray.ang.fdroid" />
+            android:targetClass="xyz.zarazaex.olc.ui.ScScannerActivity"
+            android:targetPackage="xyz.zarazaex.olc.fdroid" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
 </shortcuts>

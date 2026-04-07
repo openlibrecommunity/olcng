@@ -36,7 +36,7 @@ mkdir -p assets data
 bash gen_assets.sh download
 cp -v data/*.dat assets/
 go mod tidy
-gomobile bind -v -androidapi 24 -trimpath -ldflags='-s -w -buildid=' -o libv2ray.aar ./
+GOMAXPROCS=24 gomobile bind -v -androidapi 24 -trimpath -ldflags='-s -w -buildid=' -o libv2ray.aar ./
 popd >/dev/null
 
 echo "Building hev-socks5-tunnel..."
@@ -56,7 +56,7 @@ elif [[ "$BUILD_TYPE" == "debug" ]]; then
   BUILD_TYPE="assembleDebug"
 fi
 
-./gradlew $BUILD_TYPE
+./gradlew $BUILD_TYPE --parallel --max-workers=24
 popd >/dev/null
 
 echo "Build complete."
