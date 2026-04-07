@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.v2ray.ang"
+    namespace = "com.olcng.app"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.v2ray.ang"
+        applicationId = "com.olcng.app"
         minSdk = 24
         targetSdk = 36
         versionCode = 717
