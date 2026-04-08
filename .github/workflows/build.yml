@@ -88,6 +88,25 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
+    - name: Extract version from tag
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          TAG_NAME="${{ github.ref_name }}"
+          VERSION_NAME="${TAG_NAME#v}"
+        elif [[ "${{ github.event.inputs.release_tag }}" != "" ]]; then
+          TAG_NAME="${{ github.event.inputs.release_tag }}"
+          VERSION_NAME="${TAG_NAME#v}"
+        else
+          VERSION_NAME="dev-$(git rev-parse --short HEAD)"
+        fi
+        
+        VERSION_CODE=$(date +%s)
+        
+        echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+        echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+        echo "Version: $VERSION_NAME ($VERSION_CODE)"
+
     - name: Decode Keystore
       uses: timheuer/base64-to-file@v1.2.4
       id: android_keystore

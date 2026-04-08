@@ -12,8 +12,13 @@ android {
         applicationId = "xyz.zarazaex.olc"
         minSdk = 24
         targetSdk = 36
-        versionCode = 717
-        versionName = "2.0.17"
+        
+        val envVersionName = System.getenv("VERSION_NAME")
+        val envVersionCode = System.getenv("VERSION_CODE")
+        
+        versionCode = envVersionCode?.toIntOrNull() ?: 717
+        versionName = envVersionName ?: "2.0.17"
+        
         multiDexEnabled = true
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
