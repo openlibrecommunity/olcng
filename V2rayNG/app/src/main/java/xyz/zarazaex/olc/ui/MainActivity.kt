@@ -94,6 +94,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             requestActivityLauncher.launch(Intent(this, PerAppProxyActivity::class.java))
             binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
         }
+        findViewById<android.widget.TextView>(R.id.drawer_check_update)?.setOnClickListener {
+            startActivity(Intent(this, CheckUpdateActivity::class.java))
+            binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
+        }
         fun removeUnderlines(textView: android.widget.TextView?) {
             if (textView == null) return
             textView.movementMethod = android.text.method.LinkMovementMethod.getInstance()
