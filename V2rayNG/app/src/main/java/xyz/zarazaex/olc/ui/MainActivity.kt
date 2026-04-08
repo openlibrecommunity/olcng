@@ -32,6 +32,7 @@ import xyz.zarazaex.olc.handler.AngConfigManager
 import xyz.zarazaex.olc.handler.MmkvManager
 import xyz.zarazaex.olc.handler.SettingsChangeManager
 import xyz.zarazaex.olc.handler.SettingsManager
+import xyz.zarazaex.olc.handler.UpdateCheckerManager
 import xyz.zarazaex.olc.handler.V2RayServiceManager
 import xyz.zarazaex.olc.util.Utils
 import xyz.zarazaex.olc.viewmodel.MainViewModel
@@ -72,12 +73,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         setContentView(binding.root)
         setupToolbar(binding.toolbar, false, getString(R.string.title_server))
 
-        // setup viewpager and tablayout
         groupPagerAdapter = GroupPagerAdapter(this, emptyList())
         binding.viewPager.adapter = groupPagerAdapter
         binding.viewPager.isUserInputEnabled = true
 
-        // setup navigation drawer
         val toggle = ActionBarDrawerToggle(
             this, binding.drawerLayout, binding.toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
@@ -85,7 +84,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         toggle.syncState()
         binding.navView.setNavigationItemSelectedListener(this)
 
-        // Bottom drawer buttons
         findViewById<android.widget.TextView>(R.id.drawer_settings)?.setOnClickListener {
             requestActivityLauncher.launch(Intent(this, SettingsActivity::class.java))
             binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
@@ -150,11 +148,12 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         setupGroupTab()
         setupViewModel()
         mainViewModel.reloadServerList()
-        // Automatically update subscriptions on launch
         importConfigViaSub()
 
         checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {
         }
+
+        checkForUpdatesOnStartup()
     }
 
     private fun setupViewModel() {
@@ -644,6 +643,32 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     override fun onDestroy() {
         tabMediator?.detach()
         super.onDestroy()
+    }
+    
+    private fun checkForUpdatesOnStartup() {
+        lifecycleScope.launch {
+            try {
+                val result = UpdateCheckerManager.checkForUpdate(true)
+                if (result.hasUpdate) {
+                    showUpdateAvailableDialog(result)
+                }
+            } catch (e: Exception) {
+                Log.e(AppConfig.TAG, "Failed to check for updates on startup: ${e.message}")
+            }
+        }
+    }
+    
+    private fun showUpdateAvailableDialog(result: xyz.zarazaex.olc.dto.CheckUpdateResult) {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.update_new_version_found, result.latestVersion))
+            .setMessage(result.releaseNotes)
+            .setPositiveButton(R.string.update_now) { _, _ ->
+                result.downloadUrl?.let {
+                    Utils.openUri(this, it)
+                }
+            }
+            .setNegativeButton(android.R.string.ok, null)
+            .show()
     }
     
     private fun activateEasterEgg() {

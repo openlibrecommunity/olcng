@@ -34,7 +34,8 @@ class CheckUpdateActivity : BaseActivity() {
         binding.checkPreRelease.setOnCheckedChangeListener { _, isChecked ->
             MmkvManager.encodeSettings(AppConfig.PREF_CHECK_UPDATE_PRE_RELEASE, isChecked)
         }
-        binding.checkPreRelease.isChecked = MmkvManager.decodeSettingsBool(AppConfig.PREF_CHECK_UPDATE_PRE_RELEASE, false)
+        binding.checkPreRelease.isChecked = true
+        MmkvManager.encodeSettings(AppConfig.PREF_CHECK_UPDATE_PRE_RELEASE, true)
 
         "v${BuildConfig.VERSION_NAME} (${V2RayNativeManager.getLibVersion()})".also {
             binding.tvVersion.text = it
