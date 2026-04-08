@@ -101,7 +101,11 @@ jobs:
           VERSION_NAME="dev-$(git rev-parse --short HEAD)"
         fi
         
-        VERSION_CODE=$(date +%s)
+        IFS='.' read -ra VERSION_PARTS <<< "$VERSION_NAME"
+        MAJOR=${VERSION_PARTS[0]:-0}
+        MINOR=${VERSION_PARTS[1]:-0}
+        PATCH=${VERSION_PARTS[2]:-0}
+        VERSION_CODE=$((MAJOR * 1000000 + MINOR * 1000 + PATCH))
         
         echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
         echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
