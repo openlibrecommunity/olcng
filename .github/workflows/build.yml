@@ -99,12 +99,19 @@ jobs:
       run: |
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
-        echo "Keystore file: ${KEYSTORE_FILE}"
+        echo "Keystore file path: ${KEYSTORE_FILE}"
         echo "Key alias: ${KEY_ALIAS}"
-        ls -la "${KEYSTORE_FILE}" || echo "Keystore file not found"
+        if [ -f "${KEYSTORE_FILE}" ]; then
+          echo "Keystore file exists"
+          ls -lh "${KEYSTORE_FILE}"
+          keytool -list -v -keystore "${KEYSTORE_FILE}" -storepass "${KEYSTORE_PASSWORD}" 2>&1 | head -20 || echo "Failed to list keystore contents"
+        else
+          echo "ERROR: Keystore file not found at ${KEYSTORE_FILE}"
+          exit 1
+        fi
         chmod 755 gradlew
         ./gradlew licenseFdroidReleaseReport
-        ./gradlew assembleRelease
+        ./gradlew assembleRelease --info 2>&1 | grep -i "signing\|keystore" || true
     
     - name: Upload arm64-v8a APK
       uses: actions/upload-artifact@v7
