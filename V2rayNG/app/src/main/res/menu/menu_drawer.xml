@@ -13,5 +13,10 @@
             android:id="@+id/settings"
             android:icon="@drawable/ic_settings_24dp"
             android:title="@string/title_settings" />
+
+        <item
+            android:id="@+id/check_update"
+            android:icon="@drawable/ic_check_update_24dp"
+            android:title="@string/update_check_for_update" />
     </group>
 </menu>

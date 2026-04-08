@@ -627,10 +627,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
         when (item.itemId) {
             R.id.per_app_proxy_settings -> requestActivityLauncher.launch(Intent(this, PerAppProxyActivity::class.java))
             R.id.settings -> requestActivityLauncher.launch(Intent(this, SettingsActivity::class.java))
+            R.id.check_update -> startActivity(Intent(this, CheckUpdateActivity::class.java))
         }
 
         binding.drawerLayout.closeDrawer(GravityCompat.START)
