@@ -9,6 +9,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -136,9 +138,9 @@ jobs:
 
     - name: Upload to release
       uses: svenstaro/upload-release-action@v2
-      if: github.event.inputs.release_tag != ''
+      if: github.event.inputs.release_tag != '' || startsWith(github.ref, 'refs/tags/')
       with:
         file: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*.apk
-        tag: ${{ github.event.inputs.release_tag }}
+        tag: ${{ github.event.inputs.release_tag || github.ref_name }}
         file_glob: true
         prerelease: true
