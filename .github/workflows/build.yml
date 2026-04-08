@@ -99,6 +99,9 @@ jobs:
       run: |
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
+        echo "Keystore file: ${KEYSTORE_FILE}"
+        echo "Key alias: ${KEY_ALIAS}"
+        ls -la "${KEYSTORE_FILE}" || echo "Keystore file not found"
         chmod 755 gradlew
         ./gradlew licenseFdroidReleaseReport
         ./gradlew assembleRelease
