@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="color_fab_active">#88AC8A</color>
+    <color name="color_fab_active">@android:color/system_accent1_400</color>
     <color name="color_fab_inactive">#646464</color>
     <color name="divider_color_light">#424242</color>
 
-    <!-- Primary colors - main tone: gray -->
     <color name="md_theme_primary">#C0C0C0</color>
     <color name="md_theme_onPrimary">#303030</color>
     <color name="md_theme_primaryContainer">#474747</color>
     <color name="md_theme_onPrimaryContainer">#E0E0E0</color>
 
-    <!-- Secondary colors - accent color: green -->
-    <color name="md_theme_secondary">#88AC8A</color>
+    <color name="md_theme_secondary">@android:color/system_accent1_400</color>
     <color name="md_theme_onSecondary">#FFFFFF</color>
     <color name="md_theme_secondaryContainer">#6F3800</color>
     <color name="md_theme_onSecondaryContainer">#FFE8D6</color>
 
-    <!-- Tertiary colors - tertiary color: green -->
-    <color name="md_theme_tertiary">#83D6B5</color>
+    <color name="md_theme_tertiary">@android:color/system_accent1_300</color>
     <color name="md_theme_onTertiary">#00382E</color>
     <color name="md_theme_tertiaryContainer">#005143</color>
-    <color name="md_theme_onTertiaryContainer">#A0F2D0</color>
+    <color name="md_theme_onTertiaryContainer">@android:color/system_accent1_200</color>
 
     <!-- Error colors -->
     <color name="md_theme_error">#FFB4AB</color>
