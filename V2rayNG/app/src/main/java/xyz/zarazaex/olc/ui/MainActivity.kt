@@ -52,6 +52,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     val mainViewModel: MainViewModel by viewModels()
     private lateinit var groupPagerAdapter: GroupPagerAdapter
     private var tabMediator: TabLayoutMediator? = null
+    @Volatile private var isFabOperationInProgress = false
 
     private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
@@ -201,12 +202,24 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     }
 
     private fun handleFabAction() {
+        if (isFabOperationInProgress) {
+            return
+        }
+        isFabOperationInProgress = true
+
         applyRunningState(isLoading = true, isRunning = false)
 
-        if (mainViewModel.isRunning.value == true) {
-            V2RayServiceManager.stopVService(this)
-        } else {
-            startV2RayWithPermission()
+        lifecycleScope.launch {
+            try {
+                if (mainViewModel.isRunning.value == true) {
+                    V2RayServiceManager.stopVService(this@MainActivity)
+                } else {
+                    startV2RayWithPermission()
+                }
+            } finally {
+                delay(1000)
+                isFabOperationInProgress = false
+            }
         }
     }
 
@@ -220,29 +233,42 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     }
 
     private fun handleLiteAction() {
-        if (mainViewModel.isRunning.value == true) {
-            V2RayServiceManager.stopVService(this)
+        if (isFabOperationInProgress) {
+            return
         }
-        
-        showStatus("Обновление профилей...")
-        showLoading()
-        isLiteTesting = true
-        
-        lifecycleScope.launch(Dispatchers.IO) {
-            val result = mainViewModel.updateConfigViaSubAll()
-            delay(500L)
-            launch(Dispatchers.Main) {
-                if (result.configCount > 0) {
-                    mainViewModel.reloadServerList()
-                    showStatus("Обновлено ${result.configCount} профилей. Запуск теста...")
-                } else {
-                    showStatus("Запуск теста...")
+        isFabOperationInProgress = true
+
+        lifecycleScope.launch {
+            try {
+                if (mainViewModel.isRunning.value == true) {
+                    V2RayServiceManager.stopVService(this@MainActivity)
+                    delay(1000)
                 }
-                hideLoading()
-                
-                delay(500L)
-                showStatus("Выполняется замер задержки. Ожидаем завершения...")
-                mainViewModel.testAllRealPing()
+
+                showStatus("Обновление профилей...")
+                showLoading()
+                isLiteTesting = true
+
+                launch(Dispatchers.IO) {
+                    val result = mainViewModel.updateConfigViaSubAll()
+                    delay(500L)
+                    launch(Dispatchers.Main) {
+                        if (result.configCount > 0) {
+                            mainViewModel.reloadServerList()
+                            showStatus("Обновлено ${result.configCount} профилей. Запуск теста...")
+                        } else {
+                            showStatus("Запуск теста...")
+                        }
+                        hideLoading()
+
+                        delay(500L)
+                        showStatus("Выполняется замер задержки. Ожидаем завершения...")
+                        mainViewModel.testAllRealPing()
+                    }
+                }
+            } finally {
+                delay(1000)
+                isFabOperationInProgress = false
             }
         }
     }
@@ -269,12 +295,22 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     }
 
     fun restartV2Ray() {
-        if (mainViewModel.isRunning.value == true) {
-            V2RayServiceManager.stopVService(this)
+        if (isFabOperationInProgress) {
+            return
         }
+        isFabOperationInProgress = true
+
         lifecycleScope.launch {
-            delay(500)
-            startV2Ray()
+            try {
+                if (mainViewModel.isRunning.value == true) {
+                    V2RayServiceManager.stopVService(this@MainActivity)
+                }
+                delay(1000)
+                startV2Ray()
+            } finally {
+                delay(500)
+                isFabOperationInProgress = false
+            }
         }
     }
 

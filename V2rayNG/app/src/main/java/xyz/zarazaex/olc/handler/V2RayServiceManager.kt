@@ -30,6 +30,8 @@ object V2RayServiceManager {
     private val coreController: CoreController = V2RayNativeManager.newCoreController(CoreCallback())
     private val mMsgReceive = ReceiveMessageHandler()
     private var currentConfig: ProfileItem? = null
+    private val operationLock = Any()
+    @Volatile private var isOperationInProgress = false
 
     var serviceControl: SoftReference<ServiceControl>? = null
         set(value) {
@@ -57,13 +59,27 @@ object V2RayServiceManager {
      * @param guid The GUID of the server configuration to use (optional).
      */
     fun startVService(context: Context, guid: String? = null) {
-        Log.i(AppConfig.TAG, "StartCore-Manager: startVService from ${context::class.java.simpleName}")
-
-        if (guid != null) {
-            MmkvManager.setSelectServer(guid)
+        synchronized(operationLock) {
+            if (isOperationInProgress) {
+                Log.w(AppConfig.TAG, "StartCore-Manager: Operation already in progress")
+                return
+            }
+            isOperationInProgress = true
         }
 
-        startContextService(context)
+        try {
+            Log.i(AppConfig.TAG, "StartCore-Manager: startVService from ${context::class.java.simpleName}")
+
+            if (guid != null) {
+                MmkvManager.setSelectServer(guid)
+            }
+
+            startContextService(context)
+        } finally {
+            synchronized(operationLock) {
+                isOperationInProgress = false
+            }
+        }
     }
 
     /**
@@ -71,8 +87,21 @@ object V2RayServiceManager {
      * @param context The context from which the service is stopped.
      */
     fun stopVService(context: Context) {
-        //context.toast(R.string.toast_services_stop)
-        MessageUtil.sendMsg2Service(context, AppConfig.MSG_STATE_STOP, "")
+        synchronized(operationLock) {
+            if (isOperationInProgress) {
+                Log.w(AppConfig.TAG, "StartCore-Manager: Operation already in progress")
+                return
+            }
+            isOperationInProgress = true
+        }
+
+        try {
+            MessageUtil.sendMsg2Service(context, AppConfig.MSG_STATE_STOP, "")
+        } finally {
+            synchronized(operationLock) {
+                isOperationInProgress = false
+            }
+        }
     }
 
     /**
@@ -385,11 +414,17 @@ object V2RayServiceManager {
 
                 AppConfig.MSG_STATE_STOP -> {
                     Log.i(AppConfig.TAG, "StartCore-Manager: Stop service")
+                    synchronized(operationLock) {
+                        isOperationInProgress = false
+                    }
                     serviceControl.stopService()
                 }
 
                 AppConfig.MSG_STATE_RESTART -> {
                     Log.i(AppConfig.TAG, "StartCore-Manager: Restart service")
+                    synchronized(operationLock) {
+                        isOperationInProgress = false
+                    }
                     serviceControl.stopService()
                     Thread.sleep(500L)
                     startVService(serviceControl.getService())
