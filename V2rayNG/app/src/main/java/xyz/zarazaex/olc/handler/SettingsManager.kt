@@ -438,7 +438,6 @@ object SettingsManager {
      * Ensure default settings are present in MMKV.
      */
     private fun ensureDefaultSettings() {
-        // Write defaults in the exact order requested by the user
         ensureDefaultValue(AppConfig.PREF_MODE, AppConfig.VPN)
         ensureDefaultValue(AppConfig.PREF_VPN_DNS, AppConfig.DNS_VPN)
         ensureDefaultValue(AppConfig.PREF_VPN_MTU, AppConfig.VPN_MTU.toString())
@@ -453,10 +452,19 @@ object SettingsManager {
         ensureDefaultValue(AppConfig.PREF_MUX_XUDP_CONCURRENCY, "8")
         ensureDefaultValue(AppConfig.PREF_FRAGMENT_LENGTH, "50-100")
         ensureDefaultValue(AppConfig.PREF_FRAGMENT_INTERVAL, "10-20")
+        
+        ensureDefaultBoolValue(AppConfig.PREF_LOCAL_DNS_ENABLED, true)
+        ensureDefaultBoolValue(AppConfig.PREF_FAKE_DNS_ENABLED, true)
     }
 
     private fun ensureDefaultValue(key: String, default: String) {
         if (MmkvManager.decodeSettingsString(key).isNullOrEmpty()) {
+            MmkvManager.encodeSettings(key, default)
+        }
+    }
+
+    private fun ensureDefaultBoolValue(key: String, default: Boolean) {
+        if (MmkvManager.decodeSettingsBool(key) == null) {
             MmkvManager.encodeSettings(key, default)
         }
     }

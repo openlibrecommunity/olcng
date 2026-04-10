@@ -592,12 +592,13 @@ object V2rayConfigManager {
             val hosts = mutableMapOf<String, Any>()
             val servers = ArrayList<Any>()
 
-            //remote Dns
             val remoteDns = SettingsManager.getRemoteDnsServers()
+            val domesticDns = SettingsManager.getDomesticDnsServers()
             val proxyDomain = getUserRule2Domain(AppConfig.TAG_PROXY)
-            remoteDns.forEach {
-                servers.add(it)
-            }
+            val directDomain = getUserRule2Domain(AppConfig.TAG_DIRECT)
+            val isCnRoutingMode = directDomain.contains(AppConfig.GEOSITE_CN)
+            val geoipCn = arrayListOf(AppConfig.GEOIP_CN)
+
             if (proxyDomain.isNotEmpty()) {
                 servers.add(
                     V2rayConfig.DnsBean.ServersBean(
@@ -607,11 +608,6 @@ object V2rayConfigManager {
                 )
             }
 
-            // domestic DNS
-            val domesticDns = SettingsManager.getDomesticDnsServers()
-            val directDomain = getUserRule2Domain(AppConfig.TAG_DIRECT)
-            val isCnRoutingMode = directDomain.contains(AppConfig.GEOSITE_CN)
-            val geoipCn = arrayListOf(AppConfig.GEOIP_CN)
             if (directDomain.isNotEmpty()) {
                 servers.add(
                     V2rayConfig.DnsBean.ServersBean(
@@ -624,16 +620,17 @@ object V2rayConfigManager {
                 )
             }
 
-            //block dns
+            remoteDns.forEach {
+                servers.add(it)
+            }
+
             val blkDomain = getUserRule2Domain(AppConfig.TAG_BLOCKED)
             if (blkDomain.isNotEmpty()) {
                 hosts.putAll(blkDomain.map { it to AppConfig.LOOPBACK })
             }
 
-            // hardcode googleapi rule to fix play store problems
             hosts[AppConfig.GOOGLEAPIS_CN_DOMAIN] = AppConfig.GOOGLEAPIS_COM_DOMAIN
 
-            // hardcode popular Android Private DNS rule to fix localhost DNS problem
             hosts[AppConfig.DNS_ALIDNS_DOMAIN] = AppConfig.DNS_ALIDNS_ADDRESSES
             hosts[AppConfig.DNS_CLOUDFLARE_ONE_DOMAIN] = AppConfig.DNS_CLOUDFLARE_ONE_ADDRESSES
             hosts[AppConfig.DNS_CLOUDFLARE_DNS_COM_DOMAIN] = AppConfig.DNS_CLOUDFLARE_DNS_COM_ADDRESSES
@@ -643,7 +640,6 @@ object V2rayConfigManager {
             hosts[AppConfig.DNS_QUAD9_DOMAIN] = AppConfig.DNS_QUAD9_ADDRESSES
             hosts[AppConfig.DNS_YANDEX_DOMAIN] = AppConfig.DNS_YANDEX_ADDRESSES
 
-            //User DNS hosts
             try {
                 val userHosts = MmkvManager.decodeSettingsString(AppConfig.PREF_DNS_HOSTS)
                 if (userHosts.isNotNullEmpty()) {
@@ -657,14 +653,12 @@ object V2rayConfigManager {
                 Log.e(AppConfig.TAG, "Failed to configure user DNS hosts", e)
             }
 
-            // DNS dns
             v2rayConfig.dns = V2rayConfig.DnsBean(
                 servers = servers,
                 hosts = hosts,
                 tag = AppConfig.TAG_DNS
             )
 
-            // DNS routing
             v2rayConfig.routing.rules.add(
                 RulesBean(
                     outboundTag = AppConfig.TAG_DIRECT,
