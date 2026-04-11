@@ -29,6 +29,14 @@ import java.net.URI
 
 object AngConfigManager {
 
+    private val subscriptionLocks = mutableMapOf<String, Any>()
+
+    private fun getSubscriptionLock(subid: String): Any {
+        return synchronized(subscriptionLocks) {
+            subscriptionLocks.getOrPut(subid) { Any() }
+        }
+    }
+
 
     /**
      * Shares the configuration to the clipboard.
@@ -217,53 +225,55 @@ object AngConfigManager {
      * @return The number of configurations parsed.
      */
     private fun parseBatchConfig(servers: String?, subid: String, append: Boolean): Int {
-        try {
-            if (servers == null) {
-                return 0
-            }
-            val removedSelected = if (subid.isNotBlank() && !append) {
-                MmkvManager.getSelectServer()
-                    .takeIf { it?.isNotBlank() == true }
-                    ?.let { MmkvManager.decodeServerConfig(it) }
-                    ?.takeIf { it.subscriptionId == subid }
-            } else {
-                null
-            }
+        return synchronized(getSubscriptionLock(subid)) {
+            try {
+                if (servers == null) {
+                    return@synchronized 0
+                }
+                val removedSelected = if (subid.isNotBlank() && !append) {
+                    MmkvManager.getSelectServer()
+                        .takeIf { it?.isNotBlank() == true }
+                        ?.let { MmkvManager.decodeServerConfig(it) }
+                        ?.takeIf { it.subscriptionId == subid }
+                } else {
+                    null
+                }
 
-            val subItem = MmkvManager.decodeSubscription(subid)
+                val subItem = MmkvManager.decodeSubscription(subid)
 
-            val oldPingData = if (!append) {
-                saveOldPingData(subid)
-            } else {
-                emptyMap()
-            }
+                val oldPingData = if (!append) {
+                    saveOldPingData(subid)
+                } else {
+                    emptyMap()
+                }
 
-            val configs = mutableListOf<ProfileItem>()
-            servers.lines()
-                .distinct()
-                .reversed()
-                .forEach {
-                    val config = parseConfig(it, subid, subItem)
-                    if (config != null) {
-                        configs.add(config)
+                val configs = mutableListOf<ProfileItem>()
+                servers.lines()
+                    .distinct()
+                    .reversed()
+                    .forEach {
+                        val config = parseConfig(it, subid, subItem)
+                        if (config != null) {
+                            configs.add(config)
+                        }
                     }
+
+                if (configs.isNotEmpty()) {
+                    if (!append) {
+                        MmkvManager.removeServerViaSubid(subid)
+                    }
+                    val keyToProfile = batchSaveConfigs(configs, subid, append)
+                    restoreOldPingData(keyToProfile, oldPingData)
+                    val matchKey = findMatchedProfileKey(keyToProfile, removedSelected)
+                    matchKey?.let { MmkvManager.setSelectServer(it) }
                 }
 
-            if (configs.isNotEmpty()) {
-                if (!append) {
-                    MmkvManager.removeServerViaSubid(subid)
-                }
-                val keyToProfile = batchSaveConfigs(configs, subid)
-                restoreOldPingData(keyToProfile, oldPingData)
-                val matchKey = findMatchedProfileKey(keyToProfile, removedSelected)
-                matchKey?.let { MmkvManager.setSelectServer(it) }
+                return@synchronized configs.size
+            } catch (e: Exception) {
+                Log.e(AppConfig.TAG, "Failed to parse batch config", e)
             }
-
-            return configs.size
-        } catch (e: Exception) {
-            Log.e(AppConfig.TAG, "Failed to parse batch config", e)
+            return@synchronized 0
         }
-        return 0
     }
 
     /**
@@ -274,15 +284,23 @@ object AngConfigManager {
      * @param subid The subscription ID.
      * @return Map of generated keys to their corresponding ProfileItem.
      */
-    private fun batchSaveConfigs(configs: List<ProfileItem>, subid: String): Map<String, ProfileItem> {
+    private fun batchSaveConfigs(configs: List<ProfileItem>, subid: String, append: Boolean): Map<String, ProfileItem> {
         val keyToProfile = mutableMapOf<String, ProfileItem>()
 
-        val serverList = MmkvManager.decodeServerList(subid)
+        val serverList = if (append) {
+            MmkvManager.decodeServerList(subid)
+        } else {
+            mutableListOf()
+        }
         var needSetSelected = MmkvManager.getSelectServer().isNullOrBlank()
 
-        val existingProfiles = serverList.mapNotNull { guid ->
-            MmkvManager.decodeServerConfig(guid)?.let { guid to it }
-        }.toMap()
+        val existingProfiles = if (append) {
+            serverList.mapNotNull { guid ->
+                MmkvManager.decodeServerConfig(guid)?.let { guid to it }
+            }.toMap()
+        } else {
+            emptyMap()
+        }
 
         configs.forEach { config ->
             val existingKey = existingProfiles.entries.firstOrNull { (_, existing) ->
@@ -404,67 +422,68 @@ object AngConfigManager {
      * @return The number of configurations parsed.
      */
     private fun parseCustomConfigServer(server: String?, subid: String, append: Boolean): Int {
-        if (server == null) {
-            return 0
-        }
-        if (server.contains("inbounds")
-            && server.contains("outbounds")
-            && server.contains("routing")
-        ) {
-            try {
-                val serverList: Array<Any> =
-                    JsonUtil.fromJson(server, Array<Any>::class.java) ?: arrayOf()
+        return synchronized(getSubscriptionLock(subid)) {
+            if (server == null) {
+                return@synchronized 0
+            }
+            if (server.contains("inbounds")
+                && server.contains("outbounds")
+                && server.contains("routing")
+            ) {
+                try {
+                    val serverList: Array<Any> =
+                        JsonUtil.fromJson(server, Array<Any>::class.java) ?: arrayOf()
 
-                if (serverList.isNotEmpty()) {
+                    if (serverList.isNotEmpty()) {
+                        if (!append) {
+                            MmkvManager.removeServerViaSubid(subid)
+                        }
+                        var count = 0
+                        for (srv in serverList.reversed()) {
+                            val config = CustomFmt.parse(JsonUtil.toJson(srv)) ?: continue
+                            config.subscriptionId = subid
+                            config.description = generateDescription(config)
+                            val key = MmkvManager.encodeServerConfig("", config)
+                            MmkvManager.encodeServerRaw(key, JsonUtil.toJsonPretty(srv) ?: "")
+                            count += 1
+                        }
+                        return@synchronized count
+                    }
+                } catch (e: Exception) {
+                    Log.e(AppConfig.TAG, "Failed to parse custom config server JSON array", e)
+                }
+
+                try {
+                    val config = CustomFmt.parse(server) ?: return@synchronized 0
+                    config.subscriptionId = subid
+                    config.description = generateDescription(config)
                     if (!append) {
                         MmkvManager.removeServerViaSubid(subid)
                     }
-                    var count = 0
-                    for (srv in serverList.reversed()) {
-                        val config = CustomFmt.parse(JsonUtil.toJson(srv)) ?: continue
-                        config.subscriptionId = subid
-                        config.description = generateDescription(config)
-                        val key = MmkvManager.encodeServerConfig("", config)
-                        MmkvManager.encodeServerRaw(key, JsonUtil.toJsonPretty(srv) ?: "")
-                        count += 1
+                    val key = MmkvManager.encodeServerConfig("", config)
+                    MmkvManager.encodeServerRaw(key, server)
+                    return@synchronized 1
+                } catch (e: Exception) {
+                    Log.e(AppConfig.TAG, "Failed to parse custom config server as single config", e)
+                }
+                return@synchronized 0
+            } else if (server.startsWith("[Interface]") && server.contains("[Peer]")) {
+                try {
+                    val config = WireguardFmt.parseWireguardConfFile(server) ?: return@synchronized R.string.toast_incorrect_protocol
+                    config.description = generateDescription(config)
+                    if (!append) {
+                        MmkvManager.removeServerViaSubid(subid)
                     }
-                    return count
+                    val key = MmkvManager.encodeServerConfig("", config)
+                    MmkvManager.encodeServerRaw(key, server)
+                    return@synchronized 1
+                } catch (e: Exception) {
+                    Log.e(AppConfig.TAG, "Failed to parse WireGuard config file", e)
                 }
-            } catch (e: Exception) {
-                Log.e(AppConfig.TAG, "Failed to parse custom config server JSON array", e)
+                return@synchronized 0
+            } else {
+                return@synchronized 0
             }
-
-            try {
-                // For compatibility
-                val config = CustomFmt.parse(server) ?: return 0
-                config.subscriptionId = subid
-                config.description = generateDescription(config)
-                if (!append) {
-                    MmkvManager.removeServerViaSubid(subid)
-                }
-                val key = MmkvManager.encodeServerConfig("", config)
-                MmkvManager.encodeServerRaw(key, server)
-                return 1
-            } catch (e: Exception) {
-                Log.e(AppConfig.TAG, "Failed to parse custom config server as single config", e)
-            }
-            return 0
-        } else if (server.startsWith("[Interface]") && server.contains("[Peer]")) {
-            try {
-                val config = WireguardFmt.parseWireguardConfFile(server) ?: return R.string.toast_incorrect_protocol
-                config.description = generateDescription(config)
-                if (!append) {
-                    MmkvManager.removeServerViaSubid(subid)
-                }
-                val key = MmkvManager.encodeServerConfig("", config)
-                MmkvManager.encodeServerRaw(key, server)
-                return 1
-            } catch (e: Exception) {
-                Log.e(AppConfig.TAG, "Failed to parse WireGuard config file", e)
-            }
-            return 0
-        } else {
-            return 0
         }
     }
 
