@@ -41,7 +41,6 @@ class SubSettingActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //setContentView(binding.root)
         setContentViewWithToolbar(binding.root, showHomeAsUp = true, title = getString(R.string.title_sub_setting))
 
         adapter = SubSettingRecyclerAdapter(viewModel, ActivityAdapterListener())
@@ -53,6 +52,10 @@ class SubSettingActivity : BaseActivity() {
 
         mItemTouchHelper = ItemTouchHelper(SimpleItemTouchHelperCallback(adapter))
         mItemTouchHelper?.attachToRecyclerView(binding.recyclerView)
+
+        viewModel.isUpdating.observe(this) { isUpdating ->
+            adapter.setUpdating(isUpdating)
+        }
     }
 
     override fun onResume() {
@@ -62,44 +65,55 @@ class SubSettingActivity : BaseActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.action_sub_setting, menu)
+        viewModel.isUpdating.observe(this) { isUpdating ->
+            menu.findItem(R.id.sub_update)?.isEnabled = !isUpdating
+            menu.findItem(R.id.add_config)?.isEnabled = !isUpdating
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.add_config -> {
-            startActivity(Intent(this, SubEditActivity::class.java))
-            true
-        }
-
-        R.id.sub_update -> {
-            showLoading()
-
-            lifecycleScope.launch(Dispatchers.IO) {
-                val result = AngConfigManager.updateConfigViaSubAll()
-                delay(500L)
-                launch(Dispatchers.Main) {
-                    if (result.successCount + result.failureCount + result.skipCount == 0) {
-                        toast(R.string.title_update_subscription_no_subscription)
-                    } else if (result.successCount > 0 && result.failureCount + result.skipCount == 0) {
-                        toast(getString(R.string.title_update_config_count, result.configCount))
-                    } else {
-                        toast(
-                            getString(
-                                R.string.title_update_subscription_result,
-                                result.configCount, result.successCount, result.failureCount, result.skipCount
-                            )
-                        )
-                    }
-                    hideLoading()
-                    refreshData()
-                }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.add_config -> {
+                startActivity(Intent(this, SubEditActivity::class.java))
+                true
             }
 
-            true
+            R.id.sub_update -> {
+                if (viewModel.isUpdating.value == true) {
+                    return true
+                }
+
+                showLoading()
+                viewModel.isUpdating.value = true
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val result = AngConfigManager.updateConfigViaSubAll()
+                    delay(500L)
+                    launch(Dispatchers.Main) {
+                        viewModel.isUpdating.value = false
+                        if (result.successCount + result.failureCount + result.skipCount == 0) {
+                            toast(R.string.title_update_subscription_no_subscription)
+                        } else if (result.successCount > 0 && result.failureCount + result.skipCount == 0) {
+                            toast(getString(R.string.title_update_config_count, result.configCount))
+                        } else {
+                            toast(
+                                getString(
+                                    R.string.title_update_subscription_result,
+                                    result.configCount, result.successCount, result.failureCount, result.skipCount
+                                )
+                            )
+                        }
+                        hideLoading()
+                        refreshData()
+                    }
+                }
+
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
         }
-
-        else -> super.onOptionsItemSelected(item)
-
     }
 
     @SuppressLint("NotifyDataSetChanged")

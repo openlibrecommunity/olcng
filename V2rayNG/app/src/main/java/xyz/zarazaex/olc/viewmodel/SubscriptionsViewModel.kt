@@ -1,5 +1,6 @@
 package xyz.zarazaex.olc.viewmodel
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import xyz.zarazaex.olc.dto.SubscriptionCache
 import xyz.zarazaex.olc.dto.SubscriptionItem
@@ -10,6 +11,8 @@ import xyz.zarazaex.olc.handler.SettingsManager
 class SubscriptionsViewModel : ViewModel() {
     private val subscriptions: MutableList<SubscriptionCache> =
         MmkvManager.decodeSubscriptions().toMutableList()
+
+    val isUpdating = MutableLiveData<Boolean>(false)
 
     fun getAll(): List<SubscriptionCache> = subscriptions.toList()
 

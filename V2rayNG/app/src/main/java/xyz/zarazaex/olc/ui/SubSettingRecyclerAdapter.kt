@@ -20,6 +20,15 @@ class SubSettingRecyclerAdapter(
     private val adapterListener: BaseAdapterListener?
 ) : RecyclerView.Adapter<SubSettingRecyclerAdapter.MainViewHolder>(), ItemTouchHelperAdapter {
 
+    private var isUpdating = false
+
+    fun setUpdating(updating: Boolean) {
+        if (isUpdating != updating) {
+            isUpdating = updating
+            notifyDataSetChanged()
+        }
+    }
+
     override fun getItemCount() = viewModel.getAll().size
 
     override fun onBindViewHolder(holder: MainViewHolder, position: Int) {
@@ -32,16 +41,28 @@ class SubSettingRecyclerAdapter(
         holder.itemSubSettingBinding.tvLastUpdated.text = Utils.formatTimestamp(subItem.lastUpdated)
         holder.itemView.setBackgroundColor(Color.TRANSPARENT)
 
+        val isEnabled = !isUpdating
+
+        holder.itemSubSettingBinding.layoutEdit.isClickable = isEnabled
+        holder.itemSubSettingBinding.layoutEdit.alpha = if (isEnabled) 1.0f else 0.5f
         holder.itemSubSettingBinding.layoutEdit.setOnClickListener {
-            adapterListener?.onEdit(subId, position)
+            if (isEnabled) {
+                adapterListener?.onEdit(subId, position)
+            }
         }
 
+        holder.itemSubSettingBinding.layoutRemove.isClickable = isEnabled
+        holder.itemSubSettingBinding.layoutRemove.alpha = if (isEnabled) 1.0f else 0.5f
         holder.itemSubSettingBinding.layoutRemove.setOnClickListener {
-            adapterListener?.onRemove(subId, position)
+            if (isEnabled) {
+                adapterListener?.onRemove(subId, position)
+            }
         }
 
+        holder.itemSubSettingBinding.chkEnable.isEnabled = isEnabled
+        holder.itemSubSettingBinding.chkEnable.alpha = if (isEnabled) 1.0f else 0.5f
         holder.itemSubSettingBinding.chkEnable.setOnCheckedChangeListener { it, isChecked ->
-            if (!it.isPressed) return@setOnCheckedChangeListener
+            if (!it.isPressed || !isEnabled) return@setOnCheckedChangeListener
             subItem.enabled = isChecked
             viewModel.update(subId, subItem)
         }
@@ -56,8 +77,12 @@ class SubSettingRecyclerAdapter(
             holder.itemSubSettingBinding.layoutShare.visibility = View.VISIBLE
             holder.itemSubSettingBinding.chkEnable.visibility = View.VISIBLE
             holder.itemSubSettingBinding.layoutLastUpdated.visibility = View.VISIBLE
+            holder.itemSubSettingBinding.layoutShare.isClickable = isEnabled
+            holder.itemSubSettingBinding.layoutShare.alpha = if (isEnabled) 1.0f else 0.5f
             holder.itemSubSettingBinding.layoutShare.setOnClickListener {
-                adapterListener?.onShare(subItem.url)
+                if (isEnabled) {
+                    adapterListener?.onShare(subItem.url)
+                }
             }
         }
     }
