@@ -210,13 +210,14 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         lifecycleScope.launch {
             try {
                 if (mainViewModel.isRunning.value == true) {
+                    Log.d(AppConfig.TAG, "FAB: stopping service, isRunning=${mainViewModel.isRunning.value}")
                     V2RayServiceManager.stopVService(this@MainActivity)
                 } else {
+                    Log.d(AppConfig.TAG, "FAB: starting service, isRunning=${mainViewModel.isRunning.value}")
                     startV2RayWithPermission()
                 }
-                delay(1500)
             } catch (e: Exception) {
-                Log.e(AppConfig.TAG, "Error in handleFabAction", e)
+                Log.e(AppConfig.TAG, "FAB: error", e)
                 applyRunningState(isLoading = false, isRunning = mainViewModel.isRunning.value ?: false)
             } finally {
                 isFabOperationInProgress = false

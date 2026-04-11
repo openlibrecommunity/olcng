@@ -87,26 +87,8 @@ object V2RayServiceManager {
      * @param context The context from which the service is stopped.
      */
     fun stopVService(context: Context) {
-        synchronized(operationLock) {
-            if (isOperationInProgress) {
-                Log.w(AppConfig.TAG, "StartCore-Manager: Operation already in progress")
-                return
-            }
-            isOperationInProgress = true
-        }
-
-        try {
-            if (serviceControl?.get() == null) {
-                Log.w(AppConfig.TAG, "StartCore-Manager: Service not running, resetting UI state")
-                MessageUtil.sendMsg2UI(context, AppConfig.MSG_STATE_STOP_SUCCESS, "")
-                return
-            }
-            MessageUtil.sendMsg2Service(context, AppConfig.MSG_STATE_STOP, "")
-        } finally {
-            synchronized(operationLock) {
-                isOperationInProgress = false
-            }
-        }
+        Log.i(AppConfig.TAG, "StartCore-Manager: stopVService called, serviceControl=${serviceControl?.get()}")
+        MessageUtil.sendMsg2Service(context, AppConfig.MSG_STATE_STOP, "")
     }
 
     /**
@@ -262,23 +244,26 @@ object V2RayServiceManager {
     fun stopCoreLoop(): Boolean {
         val service = getService() ?: return false
 
+        try {
+            service.unregisterReceiver(mMsgReceive)
+        } catch (e: Exception) {
+            Log.e(AppConfig.TAG, "StartCore-Manager: Failed to unregister receiver", e)
+        }
+
+        NotificationManager.cancelNotification()
+
         if (coreController.isRunning) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     coreController.stopLoop()
                 } catch (e: Exception) {
                     Log.e(AppConfig.TAG, "StartCore-Manager: Failed to stop V2Ray loop", e)
+                } finally {
+                    MessageUtil.sendMsg2UI(service, AppConfig.MSG_STATE_STOP_SUCCESS, "")
                 }
             }
-        }
-
-        MessageUtil.sendMsg2UI(service, AppConfig.MSG_STATE_STOP_SUCCESS, "")
-        NotificationManager.cancelNotification()
-
-        try {
-            service.unregisterReceiver(mMsgReceive)
-        } catch (e: Exception) {
-            Log.e(AppConfig.TAG, "StartCore-Manager: Failed to unregister receiver", e)
+        } else {
+            MessageUtil.sendMsg2UI(service, AppConfig.MSG_STATE_STOP_SUCCESS, "")
         }
 
         return true
@@ -399,22 +384,20 @@ object V2RayServiceManager {
          * @param intent The intent being received.
          */
         override fun onReceive(ctx: Context?, intent: Intent?) {
-            val serviceControl = serviceControl?.get() ?: return
             when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_REGISTER_CLIENT -> {
+                    val svc = serviceControl?.get() ?: return
                     if (coreController.isRunning) {
-                        MessageUtil.sendMsg2UI(serviceControl.getService(), AppConfig.MSG_STATE_RUNNING, "")
+                        MessageUtil.sendMsg2UI(svc.getService(), AppConfig.MSG_STATE_RUNNING, "")
                     } else {
-                        MessageUtil.sendMsg2UI(serviceControl.getService(), AppConfig.MSG_STATE_NOT_RUNNING, "")
+                        MessageUtil.sendMsg2UI(svc.getService(), AppConfig.MSG_STATE_NOT_RUNNING, "")
                     }
                 }
 
                 AppConfig.MSG_UNREGISTER_CLIENT -> {
-                    // nothing to do
                 }
 
                 AppConfig.MSG_STATE_START -> {
-                    // nothing to do
                 }
 
                 AppConfig.MSG_STATE_STOP -> {
@@ -422,7 +405,15 @@ object V2RayServiceManager {
                     synchronized(operationLock) {
                         isOperationInProgress = false
                     }
-                    serviceControl.stopService()
+                    val svc = serviceControl?.get()
+                    if (svc != null) {
+                        svc.stopService()
+                    } else if (ctx != null) {
+                        Log.w(AppConfig.TAG, "StartCore-Manager: serviceControl null on stop, stopping core directly")
+                        stopCoreLoop()
+                        ctx.stopService(Intent(ctx, V2RayVpnService::class.java))
+                        ctx.stopService(Intent(ctx, V2RayProxyOnlyService::class.java))
+                    }
                 }
 
                 AppConfig.MSG_STATE_RESTART -> {
@@ -430,9 +421,9 @@ object V2RayServiceManager {
                     synchronized(operationLock) {
                         isOperationInProgress = false
                     }
-                    serviceControl.stopService()
+                    serviceControl?.get()?.stopService()
                     Thread.sleep(500L)
-                    startVService(serviceControl.getService())
+                    if (ctx != null) startVService(ctx)
                 }
 
                 AppConfig.MSG_MEASURE_DELAY -> {
