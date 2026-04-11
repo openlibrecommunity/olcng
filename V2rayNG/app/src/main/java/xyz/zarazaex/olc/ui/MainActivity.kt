@@ -214,8 +214,11 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 } else {
                     startV2RayWithPermission()
                 }
+                delay(1500)
+            } catch (e: Exception) {
+                Log.e(AppConfig.TAG, "Error in handleFabAction", e)
+                applyRunningState(isLoading = false, isRunning = mainViewModel.isRunning.value ?: false)
             } finally {
-                delay(1000)
                 isFabOperationInProgress = false
             }
         }
@@ -264,8 +267,10 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                         mainViewModel.testAllRealPing()
                     }
                 }
+                delay(1500)
+            } catch (e: Exception) {
+                Log.e(AppConfig.TAG, "Error in handleLiteAction", e)
             } finally {
-                delay(1000)
                 isFabOperationInProgress = false
             }
         }
@@ -302,11 +307,13 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             try {
                 if (mainViewModel.isRunning.value == true) {
                     V2RayServiceManager.stopVService(this@MainActivity)
+                    delay(1000)
                 }
-                delay(1000)
                 startV2Ray()
+                delay(1000)
+            } catch (e: Exception) {
+                Log.e(AppConfig.TAG, "Error in restartV2Ray", e)
             } finally {
-                delay(500)
                 isFabOperationInProgress = false
             }
         }
