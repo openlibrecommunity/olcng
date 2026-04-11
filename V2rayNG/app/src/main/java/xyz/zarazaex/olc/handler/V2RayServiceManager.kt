@@ -353,10 +353,19 @@ object V2RayServiceManager {
         override fun shutdown(): Long {
             val serviceControl = serviceControl?.get() ?: return -1
             return try {
-                serviceControl.stopService()
+                Log.w(AppConfig.TAG, "StartCore-Manager: Core shutdown callback, attempting restart")
+                val service = serviceControl.getService()
+                CoroutineScope(Dispatchers.IO).launch {
+                    kotlinx.coroutines.delay(1000L)
+                    val ctx = service.applicationContext
+                    if (coreController.isRunning == false) {
+                        Log.i(AppConfig.TAG, "StartCore-Manager: Restarting service after core shutdown")
+                        startVService(ctx)
+                    }
+                }
                 0
             } catch (e: Exception) {
-                Log.e(AppConfig.TAG, "StartCore-Manager: Failed to stop service", e)
+                Log.e(AppConfig.TAG, "StartCore-Manager: Failed to handle core shutdown", e)
                 -1
             }
         }
