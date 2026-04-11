@@ -8,8 +8,10 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import xyz.zarazaex.olc.AppConfig
+import xyz.zarazaex.olc.R
 import xyz.zarazaex.olc.contracts.BaseAdapterListener
 import xyz.zarazaex.olc.databinding.ItemRecyclerSubSettingBinding
+import xyz.zarazaex.olc.dto.SubscriptionUpdateStatus
 import xyz.zarazaex.olc.helper.ItemTouchHelperAdapter
 import xyz.zarazaex.olc.helper.ItemTouchHelperViewHolder
 import xyz.zarazaex.olc.util.Utils
@@ -40,6 +42,38 @@ class SubSettingRecyclerAdapter(
         holder.itemSubSettingBinding.chkEnable.isChecked = subItem.enabled
         holder.itemSubSettingBinding.tvLastUpdated.text = Utils.formatTimestamp(subItem.lastUpdated)
         holder.itemView.setBackgroundColor(Color.TRANSPARENT)
+
+        val subStatus = viewModel.getSubscriptionStatus(subId)
+        when (subStatus?.status) {
+            SubscriptionUpdateStatus.LOADING -> {
+                holder.itemSubSettingBinding.progressBar.visibility = View.VISIBLE
+                holder.itemSubSettingBinding.tvUpdateStatus.visibility = View.VISIBLE
+                holder.itemSubSettingBinding.tvUpdateStatus.text = holder.itemView.context.getString(R.string.title_updating)
+                holder.itemSubSettingBinding.tvUpdateStatus.setTextColor(Color.GRAY)
+            }
+            SubscriptionUpdateStatus.SUCCESS -> {
+                holder.itemSubSettingBinding.progressBar.visibility = View.GONE
+                holder.itemSubSettingBinding.tvUpdateStatus.visibility = View.VISIBLE
+                holder.itemSubSettingBinding.tvUpdateStatus.text = "✓ ${subStatus.configCount}"
+                holder.itemSubSettingBinding.tvUpdateStatus.setTextColor(Color.parseColor("#4CAF50"))
+            }
+            SubscriptionUpdateStatus.FAILED -> {
+                holder.itemSubSettingBinding.progressBar.visibility = View.GONE
+                holder.itemSubSettingBinding.tvUpdateStatus.visibility = View.VISIBLE
+                holder.itemSubSettingBinding.tvUpdateStatus.text = "✗"
+                holder.itemSubSettingBinding.tvUpdateStatus.setTextColor(Color.parseColor("#F44336"))
+            }
+            SubscriptionUpdateStatus.SKIPPED -> {
+                holder.itemSubSettingBinding.progressBar.visibility = View.GONE
+                holder.itemSubSettingBinding.tvUpdateStatus.visibility = View.VISIBLE
+                holder.itemSubSettingBinding.tvUpdateStatus.text = "—"
+                holder.itemSubSettingBinding.tvUpdateStatus.setTextColor(Color.GRAY)
+            }
+            else -> {
+                holder.itemSubSettingBinding.progressBar.visibility = View.GONE
+                holder.itemSubSettingBinding.tvUpdateStatus.visibility = View.GONE
+            }
+        }
 
         val isEnabled = !isUpdating
 

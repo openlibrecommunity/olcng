@@ -56,6 +56,10 @@ class SubSettingActivity : BaseActivity() {
         viewModel.isUpdating.observe(this) { isUpdating ->
             adapter.setUpdating(isUpdating)
         }
+
+        viewModel.subscriptionStatuses.observe(this) { statuses ->
+            adapter.notifyDataSetChanged()
+        }
     }
 
     override fun onResume() {
@@ -86,27 +90,77 @@ class SubSettingActivity : BaseActivity() {
 
                 showLoading()
                 viewModel.isUpdating.value = true
+                viewModel.subscriptionStatuses.value = emptyMap()
 
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val result = AngConfigManager.updateConfigViaSubAll()
-                    delay(500L)
-                    launch(Dispatchers.Main) {
-                        viewModel.isUpdating.value = false
-                        if (result.successCount + result.failureCount + result.skipCount == 0) {
-                            toast(R.string.title_update_subscription_no_subscription)
-                        } else if (result.successCount > 0 && result.failureCount + result.skipCount == 0) {
-                            toast(getString(R.string.title_update_config_count, result.configCount))
-                        } else {
-                            toast(
-                                getString(
-                                    R.string.title_update_subscription_result,
-                                    result.configCount, result.successCount, result.failureCount, result.skipCount
-                                )
-                            )
+                lifecycleScope.launch(Dispatchers.Main) {
+                    val subscriptions = viewModel.getAll()
+                    var totalConfigCount = 0
+                    var successCount = 0
+                    var failureCount = 0
+                    var skipCount = 0
+
+                    val jobs = subscriptions.map { subscription ->
+                        launch(Dispatchers.IO) {
+                            val subId = subscription.guid
+                            
+                            launch(Dispatchers.Main) {
+                                viewModel.updateSubscriptionStatus(subId, xyz.zarazaex.olc.dto.SubscriptionUpdateStatus.LOADING)
+                            }
+
+                            val result = AngConfigManager.updateConfigViaSub(subscription)
+                            
+                            launch(Dispatchers.Main) {
+                                when {
+                                    result.successCount > 0 -> {
+                                        viewModel.updateSubscriptionStatus(
+                                            subId, 
+                                            xyz.zarazaex.olc.dto.SubscriptionUpdateStatus.SUCCESS,
+                                            result.configCount
+                                        )
+                                    }
+                                    result.skipCount > 0 -> {
+                                        viewModel.updateSubscriptionStatus(
+                                            subId, 
+                                            xyz.zarazaex.olc.dto.SubscriptionUpdateStatus.SKIPPED
+                                        )
+                                    }
+                                    else -> {
+                                        viewModel.updateSubscriptionStatus(
+                                            subId, 
+                                            xyz.zarazaex.olc.dto.SubscriptionUpdateStatus.FAILED
+                                        )
+                                    }
+                                }
+                            }
+
+                            synchronized(this@SubSettingActivity) {
+                                totalConfigCount += result.configCount
+                                successCount += result.successCount
+                                failureCount += result.failureCount
+                                skipCount += result.skipCount
+                            }
                         }
-                        hideLoading()
-                        refreshData()
                     }
+
+                    jobs.forEach { it.join() }
+
+                    delay(500L)
+                    viewModel.isUpdating.value = false
+                    
+                    if (successCount + failureCount + skipCount == 0) {
+                        toast(R.string.title_update_subscription_no_subscription)
+                    } else if (successCount > 0 && failureCount + skipCount == 0) {
+                        toast(getString(R.string.title_update_config_count, totalConfigCount))
+                    } else {
+                        toast(
+                            getString(
+                                R.string.title_update_subscription_result,
+                                totalConfigCount, successCount, failureCount, skipCount
+                            )
+                        )
+                    }
+                    hideLoading()
+                    refreshData()
                 }
 
                 true

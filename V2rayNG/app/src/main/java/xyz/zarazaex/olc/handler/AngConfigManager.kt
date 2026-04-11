@@ -576,16 +576,18 @@ object AngConfigManager {
             Log.i(AppConfig.TAG, url)
             val userAgent = it.subscription.userAgent
 
+            val timeout = if (url.startsWith("https://key.zarazaex.xyz/sub")) 3000 else 15000
+
             var configText = try {
                 val httpPort = SettingsManager.getHttpPort()
-                HttpUtil.getUrlContentWithUserAgent(url, userAgent, 15000, httpPort)
+                HttpUtil.getUrlContentWithUserAgent(url, userAgent, timeout, httpPort)
             } catch (e: Exception) {
                 Log.e(AppConfig.ANG_PACKAGE, "Update subscription: proxy not ready or other error", e)
                 ""
             }
             if (configText.isEmpty()) {
                 configText = try {
-                    HttpUtil.getUrlContentWithUserAgent(url, userAgent)
+                    HttpUtil.getUrlContentWithUserAgent(url, userAgent, timeout)
                 } catch (e: Exception) {
                     Log.e(AppConfig.TAG, "Update subscription: Failed to get URL content with user agent", e)
                     ""
