@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPing">@android:color/system_accent1_600</color>
+    <color name="colorPing">#1565C0</color>
     <color name="colorPingRed">#FF0099</color>
-    <color name="colorConfigType">@android:color/system_accent1_400</color>
+    <color name="colorConfigType">#1976D2</color>
     <color name="colorWhite">#FFFFFF</color>
-    <color name="color_fab_active">@android:color/system_accent1_400</color>
+    <color name="color_fab_active">#1976D2</color>
     <color name="color_fab_inactive">#9C9C9C</color>
     <color name="divider_color_light">#E0E0E0</color>
     <color name="colorIndicator">@color/md_theme_primary</color>
@@ -14,14 +14,14 @@
     <color name="md_theme_primaryContainer">#E0E0E0</color>
     <color name="md_theme_onPrimaryContainer">#000000</color>
 
-    <color name="md_theme_secondary">@android:color/system_accent1_400</color>
+    <color name="md_theme_secondary">#1976D2</color>
     <color name="md_theme_onSecondary">#FFFFFF</color>
     <color name="md_theme_secondaryContainer">#FFE8D6</color>
     <color name="md_theme_onSecondaryContainer">#2B1700</color>
 
-    <color name="md_theme_tertiary">@android:color/system_accent1_600</color>
+    <color name="md_theme_tertiary">#1565C0</color>
     <color name="md_theme_onTertiary">#FFFFFF</color>
-    <color name="md_theme_tertiaryContainer">@android:color/system_accent1_200</color>
+    <color name="md_theme_tertiaryContainer">#BBDEFB</color>
     <color name="md_theme_onTertiaryContainer">#00201A</color>
 
     <!-- Error colors -->

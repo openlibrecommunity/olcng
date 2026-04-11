@@ -425,4 +425,5 @@
         <item>WebDAV</item>
     </string-array>
 
+    <string name="title_updating">更新中…</string>
 </resources>

@@ -417,4 +417,5 @@
         <item>WebDAV</item>
     </string-array>
 
+    <string name="title_updating">جارٍ التحديث…</string>
 </resources>

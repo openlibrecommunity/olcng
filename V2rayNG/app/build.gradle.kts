@@ -1,7 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    id("com.jaredsburrows.license")
 }
 
 android {
@@ -18,8 +16,6 @@ android {
         
         versionCode = envVersionCode?.toIntOrNull() ?: 717
         versionName = envVersionName ?: "2.0.17"
-        
-        multiDexEnabled = true
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
         splits {
@@ -90,7 +86,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            jniLibs.srcDirs("libs")
+            jniLibs.directories.add("libs")
         }
     }
 
@@ -106,50 +102,6 @@ android {
         }
     }
 
-    applicationVariants.all {
-        val variant = this
-        val isFdroid = variant.productFlavors.any { it.name == "fdroid" }
-        if (isFdroid) {
-            val versionCodes =
-                mapOf(
-                    "armeabi-v7a" to 2, "arm64-v8a" to 1, "x86" to 4, "x86_64" to 3, "universal" to 0
-                )
-
-            variant.outputs
-                .map { it as com.android.build.gradle.internal.api.ApkVariantOutputImpl }
-                .forEach { output ->
-                    val abi = output.getFilter("ABI") ?: "universal"
-                    output.outputFileName = "v2rayNG_${variant.versionName}-fdroid_${abi}.apk"
-                    if (versionCodes.containsKey(abi)) {
-                        output.versionCodeOverride =
-                            (100 * variant.versionCode + versionCodes[abi]!!).plus(5000000)
-                    } else {
-                        return@forEach
-                    }
-                }
-        } else {
-            val versionCodes =
-                mapOf("armeabi-v7a" to 4, "arm64-v8a" to 4, "x86" to 4, "x86_64" to 4, "universal" to 4)
-
-            variant.outputs
-                .map { it as com.android.build.gradle.internal.api.ApkVariantOutputImpl }
-                .forEach { output ->
-                    val abi = if (output.getFilter("ABI") != null)
-                        output.getFilter("ABI")
-                    else
-                        "universal"
-
-                    output.outputFileName = "v2rayNG_${variant.versionName}_${abi}.apk"
-                    if (versionCodes.containsKey(abi)) {
-                        output.versionCodeOverride =
-                            (1000000 * versionCodes[abi]!!).plus(variant.versionCode)
-                    } else {
-                        return@forEach
-                    }
-                }
-        }
-    }
-
     buildFeatures {
         viewBinding = true
         buildConfig = true
@@ -161,6 +113,28 @@ android {
         }
     }
 
+}
+
+androidComponents {
+    onVariants { variant ->
+        val isFdroid = variant.productFlavors.any { it.second == "fdroid" }
+        variant.outputs.forEach { output ->
+            val abi = output.filters.find {
+                it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI
+            }?.identifier ?: "universal"
+
+            if (isFdroid) {
+                val versionCodes = mapOf(
+                    "armeabi-v7a" to 2, "arm64-v8a" to 1, "x86" to 4, "x86_64" to 3, "universal" to 0
+                )
+                versionCodes[abi]?.let { code ->
+                    output.versionCode.set((100 * (output.versionCode.get() ?: 0) + code) + 5000000)
+                }
+            } else {
+                output.versionCode.set(1000000 * 4 + (output.versionCode.get() ?: 0))
+            }
+        }
+    }
 }
 
 dependencies {
@@ -209,9 +183,6 @@ dependencies {
     // Background Task Libraries
     implementation(libs.work.runtime.ktx)
     implementation(libs.work.multiprocess)
-
-    // Multidex Support
-    implementation(libs.multidex)
 
     // Testing Libraries
     testImplementation(libs.junit)

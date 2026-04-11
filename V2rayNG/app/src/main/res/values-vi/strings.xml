@@ -419,4 +419,5 @@
         <item>WebDAV</item>
     </string-array>
 
+    <string name="title_updating">Đang cập nhật…</string>
 </resources>

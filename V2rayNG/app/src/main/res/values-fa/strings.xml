@@ -432,4 +432,5 @@
         <item>WebDAV</item>
     </string-array>
 
+    <string name="title_updating">در حال به‌روزرسانی…</string>
 </resources>

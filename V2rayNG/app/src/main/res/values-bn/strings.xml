@@ -423,4 +423,5 @@
         <item>WebDAV</item>
     </string-array>
 
+    <string name="title_updating">আপডেট হচ্ছে…</string>
 </resources>

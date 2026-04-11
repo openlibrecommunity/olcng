@@ -1,7 +1,7 @@
 package xyz.zarazaex.olc
 
+import android.app.Application
 import android.content.Context
-import androidx.multidex.MultiDexApplication
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.google.android.material.color.DynamicColors
@@ -9,7 +9,7 @@ import com.tencent.mmkv.MMKV
 import xyz.zarazaex.olc.AppConfig.ANG_PACKAGE
 import xyz.zarazaex.olc.handler.SettingsManager
 
-class AngApplication : MultiDexApplication() {
+class AngApplication : Application() {
     companion object {
         lateinit var application: AngApplication
     }
