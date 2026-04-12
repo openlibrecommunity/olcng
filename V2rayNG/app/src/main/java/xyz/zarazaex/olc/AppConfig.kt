@@ -84,6 +84,8 @@ object AppConfig {
     const val BROADCAST_ACTION_SERVICE = "$ANG_PACKAGE.action.service"
     const val BROADCAST_ACTION_ACTIVITY = "$ANG_PACKAGE.action.activity"
     const val BROADCAST_ACTION_WIDGET_CLICK = "$ANG_PACKAGE.action.widget.click"
+    const val BROADCAST_ACTION_SERVICE_STOP = "$ANG_PACKAGE.action.service.stop"
+    const val BROADCAST_ACTION_SERVICE_START = "$ANG_PACKAGE.action.service.start"
 
     /** Tasker extras. */
     const val TASKER_EXTRA_BUNDLE = "com.twofortyfouram.locale.intent.extra.BUNDLE"

@@ -99,18 +99,16 @@ class V2RayVpnService : VpnService(), ServiceControl {
     override fun onDestroy() {
         super.onDestroy()
         Log.i(AppConfig.TAG, "StartCore-VPN: Service destroyed")
+        stopAllService(false)
         wakeLock?.let { if (it.isHeld) it.release() }
         wakeLock = null
-        NotificationManager.cancelNotification()
-        MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_STOP_SUCCESS, "")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(AppConfig.TAG, "StartCore-VPN: Service command received")
         setupVpnService()
         startService()
-        return START_STICKY
-        //return super.onStartCommand(intent, flags, startId)
+        return START_NOT_STICKY
     }
 
     override fun getService(): Service {

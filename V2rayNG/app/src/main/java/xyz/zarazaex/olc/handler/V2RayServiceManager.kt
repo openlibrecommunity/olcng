@@ -32,6 +32,7 @@ object V2RayServiceManager {
     private var currentConfig: ProfileItem? = null
     private val operationLock = Any()
     @Volatile private var isOperationInProgress = false
+    @Volatile var isIntentionalStop = false
 
     var serviceControl: SoftReference<ServiceControl>? = null
         set(value) {
@@ -49,6 +50,7 @@ object V2RayServiceManager {
             context.toast(R.string.app_tile_first_use)
             return false
         }
+        isIntentionalStop = false
         startContextService(context)
         return true
     }
@@ -74,6 +76,7 @@ object V2RayServiceManager {
                 MmkvManager.setSelectServer(guid)
             }
 
+            isIntentionalStop = false
             startContextService(context)
         } finally {
             synchronized(operationLock) {
@@ -87,8 +90,16 @@ object V2RayServiceManager {
      * @param context The context from which the service is stopped.
      */
     fun stopVService(context: Context) {
-        Log.i(AppConfig.TAG, "StartCore-Manager: stopVService called, serviceControl=${serviceControl?.get()}")
-        MessageUtil.sendMsg2Service(context, AppConfig.MSG_STATE_STOP, "")
+        Log.i(AppConfig.TAG, "StartCore-Manager: stopVService called")
+        isIntentionalStop = true
+        val svc = serviceControl?.get()
+        if (svc != null) {
+            svc.stopService()
+            return
+        }
+        val intent = Intent(AppConfig.BROADCAST_ACTION_SERVICE_STOP)
+        intent.setPackage(AppConfig.ANG_PACKAGE)
+        context.sendBroadcast(intent)
     }
 
     /**
@@ -356,6 +367,10 @@ object V2RayServiceManager {
                 Log.w(AppConfig.TAG, "StartCore-Manager: Core shutdown callback, attempting restart")
                 val service = serviceControl.getService()
                 MessageUtil.sendMsg2UI(service, AppConfig.MSG_STATE_NOT_RUNNING, "")
+                if (isIntentionalStop) {
+                    Log.i(AppConfig.TAG, "StartCore-Manager: Intentional stop, skipping restart")
+                    return 0
+                }
                 CoroutineScope(Dispatchers.IO).launch {
                     kotlinx.coroutines.delay(1000L)
                     val ctx = service.applicationContext

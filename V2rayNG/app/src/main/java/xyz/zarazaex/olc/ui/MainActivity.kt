@@ -208,19 +208,13 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         }
         isFabOperationInProgress = true
 
-        val actuallyRunning = V2RayServiceManager.isRunning()
-        if (mainViewModel.isRunning.value != actuallyRunning) {
-            Log.w(AppConfig.TAG, "FAB: UI state mismatch, syncing: vm=${mainViewModel.isRunning.value}, actual=$actuallyRunning")
-            mainViewModel.isRunning.value = actuallyRunning
-            isFabOperationInProgress = false
-            return
-        }
+        val isRunning = mainViewModel.isRunning.value == true
 
         applyRunningState(isLoading = true, isRunning = false)
 
         lifecycleScope.launch {
             try {
-                if (actuallyRunning) {
+                if (isRunning) {
                     Log.d(AppConfig.TAG, "FAB: stopping service")
                     V2RayServiceManager.stopVService(this@MainActivity)
                 } else {
@@ -229,7 +223,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 }
             } catch (e: Exception) {
                 Log.e(AppConfig.TAG, "FAB: error", e)
-                applyRunningState(isLoading = false, isRunning = V2RayServiceManager.isRunning())
+                applyRunningState(isLoading = false, isRunning = mainViewModel.isRunning.value == true)
             } finally {
                 isFabOperationInProgress = false
             }
@@ -378,11 +372,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
     override fun onResume() {
         super.onResume()
-        val actuallyRunning = V2RayServiceManager.isRunning()
-        if (mainViewModel.isRunning.value != actuallyRunning) {
-            Log.w(AppConfig.TAG, "onResume: syncing state vm=${mainViewModel.isRunning.value}, actual=$actuallyRunning")
-            mainViewModel.isRunning.value = actuallyRunning
-        }
         MessageUtil.sendMsg2Service(this, AppConfig.MSG_REGISTER_CLIENT, "")
     }
 

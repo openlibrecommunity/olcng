@@ -211,6 +211,16 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".receiver.ServiceControlReceiver"
+            android:exported="false"
+            android:process=":RunSoLibV2RayDaemon">
+            <intent-filter>
+                <action android:name="${applicationId}.action.service.stop" />
+                <action android:name="${applicationId}.action.service.start" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".service.QSTileService"
             android:exported="true"
