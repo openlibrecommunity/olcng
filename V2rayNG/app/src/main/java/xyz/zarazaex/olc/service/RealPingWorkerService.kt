@@ -77,50 +77,25 @@ class RealPingWorkerService(
     }
 
     private suspend fun startRealPing(guid: String): Long {
-        val retFailure = -1L
         val configResult = V2rayConfigManager.getV2rayConfig4Speedtest(context, guid)
-        if (!configResult.status) {
-            return retFailure
-        }
+        if (!configResult.status) return -1L
 
-        var bestDelay = retFailure
-        
-        for (attempt in 0 until 2) {
+        val urls = listOf(
+            SettingsManager.getDelayTestUrl(),
+            SettingsManager.getDelayTestUrl(true)
+        )
+
+        for (url in urls) {
             try {
                 val delay = withTimeout(10000L) {
-                    V2RayNativeManager.measureOutboundDelay(
-                        configResult.content, 
-                        SettingsManager.getDelayTestUrl()
-                    )
+                    V2RayNativeManager.measureOutboundDelay(configResult.content, url)
                 }
-                
-                if (delay > 0 && (bestDelay == retFailure || delay < bestDelay)) {
-                    bestDelay = delay
-                }
-                
-                if (bestDelay > 0) {
-                    break
-                }
-            } catch (e: Exception) {
-                if (attempt == 0) {
-                    try {
-                        val delay = withTimeout(10000L) {
-                            V2RayNativeManager.measureOutboundDelay(
-                                configResult.content, 
-                                SettingsManager.getDelayTestUrl(true)
-                            )
-                        }
-                        
-                        if (delay > 0 && (bestDelay == retFailure || delay < bestDelay)) {
-                            bestDelay = delay
-                        }
-                    } catch (_: Exception) {
-                    }
-                }
+                if (delay > 0) return delay
+            } catch (_: Exception) {
             }
         }
-        
-        return bestDelay
+
+        return -1L
     }
 }
 

@@ -163,14 +163,16 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 isLiteTesting = false
                 mainViewModel.sortByTestResults()
                 mainViewModel.reloadServerList()
-                
-                val firstServer = mainViewModel.serversCache.firstOrNull()
-                if (firstServer != null) {
-                    MmkvManager.setSelectServer(firstServer.guid)
+
+                val firstReachable = mainViewModel.serversCache.firstOrNull { cache ->
+                    (MmkvManager.decodeServerAffiliationInfo(cache.guid)?.testDelayMillis ?: 0L) > 0L
+                }
+                if (firstReachable != null) {
+                    MmkvManager.setSelectServer(firstReachable.guid)
                     showStatus("Подключаемся к быстрейшему серверу")
                     startV2RayWithPermission()
                 } else {
-                    showStatus("Серверы не найдены!")
+                    showStatus("Нет доступных серверов!")
                 }
             }
         }

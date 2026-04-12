@@ -96,7 +96,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val subServers = MmkvManager.decodeServerList(sub.guid)
                 subServers.forEach { guid ->
                     val delay = MmkvManager.decodeServerAffiliationInfo(guid)?.testDelayMillis ?: 0L
-                    allServers.add(ServerWithDelay(guid, if (delay <= 0L) 999999 else delay))
+                    val sortKey = when {
+                        delay > 0L -> delay
+                        delay == 0L -> Long.MAX_VALUE - 1
+                        else -> Long.MAX_VALUE
+                    }
+                    allServers.add(ServerWithDelay(guid, sortKey))
                 }
             }
             
@@ -482,7 +487,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val serverList = MmkvManager.decodeServerList(sub.guid)
             serverList.forEach { guid ->
                 val delay = MmkvManager.decodeServerAffiliationInfo(guid)?.testDelayMillis ?: 0L
-                allServerDelays.add(ServerDelay(guid, if (delay <= 0L) 999999 else delay, sub.guid))
+                val sortKey = when {
+                    delay > 0L -> delay
+                    delay == 0L -> Long.MAX_VALUE - 1
+                    else -> Long.MAX_VALUE
+                }
+                allServerDelays.add(ServerDelay(guid, sortKey, sub.guid))
             }
         }
         
@@ -507,7 +517,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         serverListToSort.forEach { key ->
             val delay = MmkvManager.decodeServerAffiliationInfo(key)?.testDelayMillis ?: 0L
-            serverDelays.add(ServerDelay(key, if (delay <= 0L) 999999 else delay))
+            val sortKey = when {
+                delay > 0L -> delay
+                delay == 0L -> Long.MAX_VALUE - 1
+                else -> Long.MAX_VALUE
+            }
+            serverDelays.add(ServerDelay(key, sortKey))
         }
         serverDelays.sortBy { it.testDelayMillis }
 
