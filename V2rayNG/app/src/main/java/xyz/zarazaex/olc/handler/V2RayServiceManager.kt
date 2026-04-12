@@ -355,6 +355,7 @@ object V2RayServiceManager {
             return try {
                 Log.w(AppConfig.TAG, "StartCore-Manager: Core shutdown callback, attempting restart")
                 val service = serviceControl.getService()
+                MessageUtil.sendMsg2UI(service, AppConfig.MSG_STATE_NOT_RUNNING, "")
                 CoroutineScope(Dispatchers.IO).launch {
                     kotlinx.coroutines.delay(1000L)
                     val ctx = service.applicationContext
