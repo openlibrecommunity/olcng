@@ -34,6 +34,7 @@ import xyz.zarazaex.olc.handler.SettingsChangeManager
 import xyz.zarazaex.olc.handler.SettingsManager
 import xyz.zarazaex.olc.handler.UpdateCheckerManager
 import xyz.zarazaex.olc.handler.V2RayServiceManager
+import xyz.zarazaex.olc.util.MessageUtil
 import xyz.zarazaex.olc.util.Utils
 import xyz.zarazaex.olc.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
