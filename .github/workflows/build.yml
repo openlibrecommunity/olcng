@@ -167,5 +167,5 @@ jobs:
       with:
         files: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*.apk
         tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
-        prerelease: true
+        prerelease: false
         generate_release_notes: true
