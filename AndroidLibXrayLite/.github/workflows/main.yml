@@ -1,0 +1,70 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        required: false
+        type: string
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v6.0.0
+      
+    - name: Setup Golang
+      uses: actions/setup-go@v6.1.0
+      with:
+        go-version-file: 'go.mod'
+
+    - name: Install gomobile
+      run: |
+        go install golang.org/x/mobile/cmd/gomobile@latest
+        export PATH=$PATH:~/go/bin
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3.2.0
+      with:
+        log-accepted-android-sdk-licenses: false
+        cmdline-tools-version: '12266719'
+        packages: 'platforms;android-35 build-tools;35.0.0 platform-tools'
+
+    - name: Install NDK
+      run: |
+        echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+          --channel=0 \
+          --install "ndk;28.2.13676358"
+        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> $GITHUB_ENV
+
+    - name: Build
+      run: |
+         mkdir -p assets data
+         bash gen_assets.sh download
+         cp -v data/*.dat assets/
+         gomobile init
+         go mod tidy
+         gomobile bind -v -androidapi 24 -trimpath -ldflags='-s -w -buildid=' ./
+ 
+    - name: Upload build artifacts
+      if: github.event.inputs.release_tag == ''
+      uses: actions/upload-artifact@v6.0.0
+      with:
+        name: libv2ray
+        path: |
+          ${{ github.workspace }}/libv2ray*r
+
+    - name: Upload AndroidLibXrayLite to release
+      if: github.event.inputs.release_tag != ''
+      uses: svenstaro/upload-release-action@v2
+      with:
+        file: ./libv2ray*r
+        tag: ${{ github.event.inputs.release_tag }}
+        file_glob: true
