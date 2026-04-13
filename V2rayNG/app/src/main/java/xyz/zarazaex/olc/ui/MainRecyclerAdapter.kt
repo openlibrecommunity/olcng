@@ -28,6 +28,7 @@ class MainRecyclerAdapter(
     companion object {
         private const val VIEW_TYPE_ITEM = 1
         private const val VIEW_TYPE_FOOTER = 2
+        private const val PAYLOAD_FAVORITE = "PAYLOAD_FAVORITE"
     }
 
     private val doubleColumnDisplay =
@@ -39,7 +40,7 @@ class MainRecyclerAdapter(
         super.onAttachedToRecyclerView(rv)
         recyclerView = rv
         (rv.itemAnimator as? androidx.recyclerview.widget.SimpleItemAnimator)?.apply {
-            moveDuration = 0
+            moveDuration = 400
             removeDuration = 300
             addDuration = 300
         }
@@ -94,8 +95,15 @@ class MainRecyclerAdapter(
                                                         )
                                                         ?.testDelayMillis
                             }
+
+                            override fun getChangePayload(oldPos: Int, newPos: Int): Any? {
+                                if (oldData[oldPos].profile.isFavorite != parsedNewData[newPos].profile.isFavorite) {
+                                    return PAYLOAD_FAVORITE
+                                }
+                                return super.getChangePayload(oldPos, newPos)
+                            }
                         },
-                        false // Disable move detection to force Fade-out/Fade-in animations
+                        true
                 )
 
         data = parsedNewData.toMutableList()
@@ -110,6 +118,38 @@ class MainRecyclerAdapter(
     }
 
     override fun getItemCount() = data.size + 1
+
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isNotEmpty() && holder is MainViewHolder) {
+            for (payload in payloads) {
+                if (payload == PAYLOAD_FAVORITE) {
+                    val isFav = data[position].profile.isFavorite
+                    animateFavorite(holder.itemMainBinding.ivFavorite, isFav)
+                }
+            }
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
+    }
+
+    private fun animateFavorite(view: android.widget.ImageView, isFavorite: Boolean) {
+        view.animate()
+                .scaleX(1.3f)
+                .scaleY(1.3f)
+                .setDuration(150)
+                .withEndAction {
+                    view.setImageResource(
+                            if (isFavorite) R.drawable.ic_star_filled
+                            else R.drawable.ic_star_empty
+                    )
+                    view.animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .setDuration(150)
+                            .start()
+                }
+                .start()
+    }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         if (holder is MainViewHolder) {
