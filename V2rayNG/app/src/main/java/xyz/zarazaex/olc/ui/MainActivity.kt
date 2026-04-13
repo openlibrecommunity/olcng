@@ -381,6 +381,32 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+
+        val searchItem = menu.findItem(R.id.search_view)
+        val searchView = searchItem.actionView as SearchView
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                mainViewModel.filterConfig(newText.orEmpty())
+                return true
+            }
+        })
+
+        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                mainViewModel.filterConfig("")
+                return true
+            }
+        })
+
         return super.onCreateOptionsMenu(menu)
     }
 
