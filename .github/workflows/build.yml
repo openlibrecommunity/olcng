@@ -66,21 +66,30 @@ jobs:
       run: |
         cp -r ${{ github.workspace }}/libs ${{ github.workspace }}/V2rayNG/app
 
-    - name: Fetch AndroidLibXrayLite tag
-      run: |
-        pushd AndroidLibXrayLite
-        CURRENT_TAG=$(git describe --tags --abbrev=0)
-        echo "Current tag in this repo: $CURRENT_TAG"
-        echo "CURRENT_TAG=$CURRENT_TAG" >> $GITHUB_ENV
-        popd
-
-    - name: Download libv2ray
-      uses: robinraju/release-downloader@v1.12
+    - name: Setup Go
+      uses: actions/setup-go@v5
       with:
-        repository: '2dust/AndroidLibXrayLite'
-        tag: ${{ env.CURRENT_TAG }}
-        fileName: 'libv2ray.aar'
-        out-file-path: V2rayNG/app/libs/
+        go-version: '1.22'
+        cache-dependency-path: AndroidLibXrayLite/go.sum
+
+    - name: Build libv2ray
+      run: |
+        go install golang.org/x/mobile/cmd/gomobile@latest
+        go install golang.org/x/mobile/cmd/gobind@latest
+        export PATH=$PATH:$(go env GOPATH)/bin
+        gomobile init
+        
+        pushd AndroidLibXrayLite
+        mkdir -p assets data
+        # Download geo assets if needed
+        bash gen_assets.sh download
+        cp -v data/*.dat assets/
+        go mod tidy
+        gomobile bind -v -androidapi 24 -trimpath -ldflags='-s -w -buildid=' -o libv2ray.aar ./
+        popd
+        
+        mkdir -p V2rayNG/app/libs/
+        cp AndroidLibXrayLite/libv2ray.aar V2rayNG/app/libs/
 
     - name: Setup Java
       uses: actions/setup-java@v5
