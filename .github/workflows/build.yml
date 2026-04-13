@@ -171,7 +171,7 @@ jobs:
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*x86*.apk
 
     - name: Upload to release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       if: github.event.inputs.release_tag != '' || startsWith(github.ref, 'refs/tags/')
       with:
         files: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*.apk
