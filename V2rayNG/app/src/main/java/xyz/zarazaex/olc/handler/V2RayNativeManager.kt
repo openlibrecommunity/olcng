@@ -75,6 +75,21 @@ object V2RayNativeManager {
     }
 
     /**
+     * Measure outbound connection delay for multiple configs in batch.
+     *
+     * @param configsJson JSON array of {guid, config}
+     * @param testUrl The URL to test against
+     * @param callback Callback for individual results
+     */
+    fun measureOutboundDelayBatch(configsJson: String, testUrl: String, callback: libv2ray.PingCallback) {
+        try {
+            Libv2ray.measureOutboundDelayBatch(configsJson, testUrl, callback)
+        } catch (e: Exception) {
+            Log.e(AppConfig.TAG, "Failed to measure outbound delay batch", e)
+        }
+    }
+
+    /**
      * Create a new core controller instance.
      *
      * @param handler The callback handler for core events

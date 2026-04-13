@@ -42,6 +42,7 @@ object SettingsManager {
         migrateServerListToSubscriptions()
         migrateHysteria2PinSHA256()
         migrateAutoSort()
+        migrateDelayTestUrl()
     }
 
     /**
@@ -571,6 +572,18 @@ object SettingsManager {
                 swapSubscriptions(0, subsList.count() - 1)
             }
         }
+    }
+    
+    private fun migrateDelayTestUrl() {
+        val migrationKey = "delay_test_url_migrated_v3"
+        if (MmkvManager.decodeSettingsBool(migrationKey, false)) {
+            return
+        }
+        val currentUrl = MmkvManager.decodeSettingsString(AppConfig.PREF_DELAY_TEST_URL)
+        if (currentUrl == null || currentUrl.contains("generate_204") || currentUrl.contains("gstatic.com") || currentUrl.contains("google.com") || currentUrl.contains("api.ip.sb")) {
+            MmkvManager.encodeSettings(AppConfig.PREF_DELAY_TEST_URL, AppConfig.DELAY_TEST_URL)
+        }
+        MmkvManager.encodeSettings(migrationKey, true)
     }
 
 }
