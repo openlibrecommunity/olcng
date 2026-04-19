@@ -15,6 +15,8 @@ import xyz.zarazaex.olc.databinding.ItemRecyclerFooterBinding
 import xyz.zarazaex.olc.databinding.ItemRecyclerMainBinding
 import xyz.zarazaex.olc.dto.ProfileItem
 import xyz.zarazaex.olc.dto.ServersCache
+import xyz.zarazaex.olc.extension.toastError
+import xyz.zarazaex.olc.extension.toastSuccess
 import xyz.zarazaex.olc.handler.AngConfigManager
 import xyz.zarazaex.olc.handler.MmkvManager
 import xyz.zarazaex.olc.helper.ItemTouchHelperAdapter
@@ -198,6 +200,14 @@ class MainRecyclerAdapter(
                 profile.isFavorite = !profile.isFavorite
                 MmkvManager.encodeServerConfig(guid, profile)
                 mainViewModel.reloadServerList()
+            }
+
+            holder.itemMainBinding.ivCopy.setOnClickListener {
+                if (AngConfigManager.share2Clipboard(context, guid) == 0) {
+                    context.toastSuccess(R.string.toast_success)
+                } else {
+                    context.toastError(R.string.toast_failure)
+                }
             }
 
             holder.itemMainBinding.infoContainer.setOnClickListener {
