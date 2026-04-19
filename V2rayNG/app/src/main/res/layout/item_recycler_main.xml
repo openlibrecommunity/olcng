@@ -119,7 +119,8 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:padding="@dimen/padding_spacing_dp8"
-                    android:src="@drawable/ic_copy" />
+                    android:src="@drawable/ic_copy"
+                    app:tint="?attr/colorAccent" />
 
             </LinearLayout>
 
