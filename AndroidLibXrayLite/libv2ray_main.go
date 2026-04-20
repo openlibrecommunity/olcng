@@ -170,7 +170,9 @@ func (x *CoreController) MeasureDelay(url string) (int64, error) {
 
 // MeasureOutboundDelay measures the outbound delay for a given configuration and URL
 func MeasureOutboundDelay(ConfigureFileContent string, url string) (int64, error) {
-	return measureOutboundDelayInternal(ConfigureFileContent, url)
+	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Second)
+	defer cancel()
+	return measureOutboundDelayInternal(ctx, ConfigureFileContent, url)
 }
 
 // MeasureOutboundDelayBatch measures the outbound delay for multiple configurations in parallel
@@ -190,28 +192,46 @@ func MeasureOutboundDelayBatch(itemsJson string, url string, callback PingCallba
 		return
 	}
 
-	// Semaphore to limit concurrency (max 128 concurrent tests)
-	sem := make(chan struct{}, 128)
-	var wg sync.WaitGroup
+	// Use a worker pool to process items
+	// Reduce concurrency to 8 for maximum stability on diverse mobile hardware
+	concurrency := 8
+	if len(items) < concurrency {
+		concurrency = len(items)
+	}
 
+	itemChan := make(chan PingItem, len(items))
 	for _, item := range items {
-		wg.Add(1)
-		go func(it PingItem) {
-			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
+		itemChan <- item
+	}
+	close(itemChan)
 
-			delay, _ := measureOutboundDelayInternal(it.Config, url)
-			if callback != nil {
-				callback.OnResult(it.Guid, delay)
+	var wg sync.WaitGroup
+	wg.Add(concurrency)
+
+	for i := 0; i < concurrency; i++ {
+		go func() {
+			defer wg.Done()
+			for it := range itemChan {
+				// Set a reasonable timeout for each individual test
+				ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+				
+				delay, _ := measureOutboundDelayInternal(ctx, it.Config, url)
+				cancel() // cancel context as soon as we have a result
+
+				if callback != nil {
+					callback.OnResult(it.Guid, delay)
+				}
+				
+				// Small sleep to prevent overwhelming the system with broadcasts and rapid CPU spikes
+				time.Sleep(50 * time.Millisecond)
 			}
-		}(item)
+		}()
 	}
 
 	wg.Wait()
 }
 
-func measureOutboundDelayInternal(ConfigureFileContent string, url string) (int64, error) {
+func measureOutboundDelayInternal(ctx context.Context, ConfigureFileContent string, url string) (int64, error) {
 	config, err := coreserial.LoadJSONConfig(strings.NewReader(ConfigureFileContent))
 	if err != nil {
 		return -1, fmt.Errorf("config load error: %w", err)
@@ -237,8 +257,28 @@ func measureOutboundDelayInternal(ConfigureFileContent string, url string) (int6
 	if err := inst.Start(); err != nil {
 		return -1, fmt.Errorf("startup failed: %w", err)
 	}
-	defer inst.Close()
-	return measureInstDelay(context.Background(), inst, url)
+	
+	// Measure delay
+	delay, err := measureInstDelay(ctx, inst, url)
+	
+	// Close instance with a short timeout to prevent hanging the worker
+	closeCtx, closeCancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer closeCancel()
+	
+	done := make(chan struct{})
+	go func() {
+		inst.Close()
+		close(done)
+	}()
+	
+	select {
+	case <-done:
+		// Closed successfully
+	case <-closeCtx.Done():
+		// Close timed out, move on
+	}
+	
+	return delay, err
 }
 
 // CheckVersionX returns the library and Xray versions
@@ -295,7 +335,7 @@ func measureInstDelay(ctx context.Context, inst *core.Instance, url string) (int
 
 	tr := &http.Transport{
 		TLSHandshakeTimeout: 6 * time.Second,
-		DisableKeepAlives:   false,
+		DisableKeepAlives:   true,
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dest, err := corenet.ParseDestination(fmt.Sprintf("%s:%s", network, addr))
 			if err != nil {
@@ -307,7 +347,7 @@ func measureInstDelay(ctx context.Context, inst *core.Instance, url string) (int
 
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   5 * time.Second,
+		Timeout:   6 * time.Second,
 	}
 
 	if url == "" {
@@ -323,7 +363,7 @@ func measureInstDelay(ctx context.Context, inst *core.Instance, url string) (int
 	success := false
 	var lastErr error
 
-	// Use 2 attempts as requested by user
+	// Use 2 attempts
 	const attempts = 2
 	for i := 0; i < attempts; i++ {
 		select {
@@ -344,8 +384,8 @@ func measureInstDelay(ctx context.Context, inst *core.Instance, url string) (int
 			continue
 		}
 
-		// Read body and close resp immediately
-		body, err := io.ReadAll(resp.Body)
+		// Limit reading to 64KB to prevent OOM
+		body, err := io.ReadAll(io.LimitReader(resp.Body, 64*1024))
 		resp.Body.Close()
 
 		if err != nil {
@@ -358,11 +398,14 @@ func measureInstDelay(ctx context.Context, inst *core.Instance, url string) (int
 			continue
 		}
 
-		// Strict IP check: the body must contain a valid IP address
-		ipStr := strings.TrimSpace(string(body))
-		if net.ParseIP(ipStr) == nil {
-			lastErr = fmt.Errorf("response body is not a valid IP: %s", ipStr)
-			continue
+		// Relaxed IP check: only if the URL seems like an IP check service
+		isIPCheckUrl := strings.Contains(strings.ToLower(url), "ip")
+		if isIPCheckUrl {
+			ipStr := strings.TrimSpace(string(body))
+			if net.ParseIP(ipStr) == nil {
+				lastErr = fmt.Errorf("response body is not a valid IP: %s", ipStr)
+				continue
+			}
 		}
 
 		duration := time.Since(start).Milliseconds()

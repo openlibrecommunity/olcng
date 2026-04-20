@@ -40,12 +40,18 @@ class RealPingWorkerService(
                 // Prepare configurations for batch test and shuffle for better async feel
                 val items =
                         guids.shuffled().mapNotNull { guid ->
-                            val configResult =
-                                    V2rayConfigManager.getV2rayConfig4Speedtest(context, guid)
-                            if (configResult.status) {
-                                PingItem(guid, configResult.content)
-                            } else {
-                                // Notify failure immediately for invalid configs
+                            try {
+                                val configResult =
+                                        V2rayConfigManager.getV2rayConfig4Speedtest(context, guid)
+                                if (configResult.status) {
+                                    PingItem(guid, configResult.content)
+                                } else {
+                                    // Notify failure immediately for invalid configs
+                                    reportResult(guid, -1L)
+                                    null
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.e(AppConfig.TAG, "Failed to prepare config for $guid", e)
                                 reportResult(guid, -1L)
                                 null
                             }
@@ -67,9 +73,13 @@ class RealPingWorkerService(
                     )
                 }
 
-                onFinish("0")
+                if (job.isActive) {
+                    onFinish("0")
+                }
             } catch (e: Exception) {
-                onFinish("-1")
+                if (job.isActive) {
+                    onFinish("-1")
+                }
             } finally {
                 cancel()
             }
@@ -77,15 +87,22 @@ class RealPingWorkerService(
     }
 
     private fun reportResult(guid: String, delay: Long) {
-        val finished = finishedCount.incrementAndGet()
-        val total = guids.size
+        if (!job.isActive) return
 
-        // Notify UI about the individual result
-        MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_SUCCESS, Pair(guid, delay))
+        // Launch in scope to unblock Go worker immediately
+        scope.launch {
+            val finished = finishedCount.incrementAndGet()
+            val total = guids.size
 
-        // Notify UI about progress
-        val left = total - finished
-        MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_NOTIFY, "$left / $total")
+            // Notify UI about the individual result
+            MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_SUCCESS, Pair(guid, delay))
+
+            // Throttle progress updates: every 10 items or the very last one
+            if (finished % 10 == 0 || finished == total) {
+                val left = total - finished
+                MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_NOTIFY, "$left / $total")
+            }
+        }
     }
 
     fun cancel() {
