@@ -193,8 +193,8 @@ func MeasureOutboundDelayBatch(itemsJson string, url string, callback PingCallba
 	}
 
 	// Use a worker pool to process items
-	// Middle ground: 16 concurrency for good performance without hitting OS limits
-	concurrency := 16
+	// Performance tuning: 18 concurrency
+	concurrency := 18
 	if len(items) < concurrency {
 		concurrency = len(items)
 	}
