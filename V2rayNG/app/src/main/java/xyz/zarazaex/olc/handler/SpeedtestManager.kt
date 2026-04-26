@@ -94,7 +94,7 @@ object SpeedtestManager {
         var result: String
         var elapsed = -1L
 
-        val testUrl = "https://icanhazip.com"
+        val testUrl = "https://api.ipify.org"
         val conn = HttpUtil.createProxyConnection(testUrl, port, 15000, 15000) ?: return Pair(elapsed, "")
         try {
             val start = SystemClock.elapsedRealtime()

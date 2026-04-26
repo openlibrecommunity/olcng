@@ -311,7 +311,7 @@ func measureInstDelay(ctx context.Context, inst *core.Instance, url string) (int
 	}
 
 	if url == "" {
-		url = "https://www.google.com/generate_204"
+		url = "https://api.ipify.org"
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
