@@ -159,10 +159,10 @@ func (x *CoreController) QueryStats(tag string, direct string) int64 {
 }
 
 // MeasureDelay measures network latency to a specified URL through the current core instance
-// Uses a 12-second timeout context and returns the round-trip time in milliseconds
+// Uses a 6-second timeout context and returns the round-trip time in milliseconds
 // An error is returned if the connection fails or returns an unexpected status
 func (x *CoreController) MeasureDelay(url string) (int64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
 	defer cancel()
 
 	return measureInstDelay(ctx, x.coreInstance, url)
@@ -307,7 +307,7 @@ func measureInstDelay(ctx context.Context, inst *core.Instance, url string) (int
 
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   5 * time.Second,
+		Timeout:   6 * time.Second,
 	}
 
 	if url == "" {

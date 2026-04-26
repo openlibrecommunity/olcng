@@ -266,8 +266,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
                 launch(Dispatchers.IO) {
                     val result = mainViewModel.updateConfigViaSubAll()
-                    delay(500L)
-                    launch(Dispatchers.Main) {
+                    withContext(Dispatchers.Main) {
                         if (result.configCount > 0) {
                             mainViewModel.reloadServerList()
                             showStatus("Обновлено ${result.configCount} профилей. Запуск теста...")
@@ -276,7 +275,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                         }
                         hideLoading()
 
-                        delay(500L)
                         showStatus("Выполняется замер задержки. Ожидаем завершения...")
                         mainViewModel.testAllRealPing()
                     }
