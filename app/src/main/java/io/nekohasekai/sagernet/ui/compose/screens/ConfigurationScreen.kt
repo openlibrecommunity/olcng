@@ -50,7 +50,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import io.nekohasekai.sagernet.group.BuiltinPool
-import io.nekohasekai.sagernet.GroupOrder
 import io.nekohasekai.sagernet.GroupType
 import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.database.DataStore
@@ -65,15 +64,9 @@ import io.nekohasekai.sagernet.ui.compose.components.OwenclaveTopAppBar
 import io.nekohasekai.sagernet.ui.compose.components.ProfileCard
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
-import io.nekohasekai.sagernet.bg.test.pingComparator
 import io.nekohasekai.sagernet.bg.test.BatchProbeCoordinator
 import io.nekohasekai.sagernet.ui.compose.components.BuiltinPoolStatus
 import io.nekohasekai.sagernet.ui.compose.components.InlineProbeStatus
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.sample
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -90,16 +83,15 @@ fun ConfigurationScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    var profiles by remember { mutableStateOf<List<ProxyEntity>>(emptyList()) }
-    var selectedProfileId by remember { mutableStateOf(DataStore.selectedProxy) }
-    var selectedGroupId by remember { mutableStateOf<Long?>(null) }
-    var groupRevision by remember { mutableStateOf(0) }
-    val isBuiltinGroup = remember(selectedGroupId, groupRevision) {
+    val viewModel: io.nekohasekai.sagernet.ui.compose.ConfigurationViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val profiles by viewModel.profiles.collectAsStateWithLifecycle()
+    val selectedProfileId by viewModel.selectedProfileId.collectAsStateWithLifecycle()
+    val selectedGroup by viewModel.currentGroup.collectAsStateWithLifecycle()
+    val selectedGroupId = selectedGroup?.id
+    val isBuiltinGroup = remember(selectedGroupId) {
         selectedGroupId?.let(BuiltinPool::isPool) == true
     }
-    val selectedGroupName = remember(selectedGroupId, groupRevision) {
-        selectedGroupId?.let { SagerDatabase.groupDao.getById(it)?.displayName() }.orEmpty()
-    }
+    val selectedGroupName = selectedGroup?.displayName().orEmpty()
     var showProtocolPicker by remember { mutableStateOf(false) }
     val pingingIds by BatchProbeCoordinator.testingIds.collectAsStateWithLifecycle()
     val progress by BatchProbeCoordinator.progress.collectAsStateWithLifecycle()
@@ -109,9 +101,7 @@ fun ConfigurationScreen(
 
     LaunchedEffect(startup.running) {
         if (!startup.running) {
-            selectedGroupId = withContext(Dispatchers.IO) { DataStore.currentGroupId() }
-            selectedProfileId = DataStore.selectedProxy
-            groupRevision++
+            viewModel.loadProfiles()
         }
     }
 
@@ -119,35 +109,10 @@ fun ConfigurationScreen(
         onBatchTestProgress(progress?.let { it.completed to it.total })
     }
 
-    LaunchedEffect(selectedGroupId, groupRevision, lifecycleOwner) {
-        val groupId = selectedGroupId ?: return@LaunchedEffect
-        lifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-            SagerDatabase.proxyDao.getByGroupFlow(groupId)
-                .conflate()
-                .sample(300)
-                .mapLatest { raw ->
-                    withContext(Dispatchers.Default) {
-                        val group = SagerDatabase.groupDao.getById(groupId)
-                        when {
-                            BuiltinPool.isPool(groupId) || group?.order == GroupOrder.BY_DELAY ->
-                                raw.sortedWith(pingComparator({ it.status }, { it.ping }, { it.userOrder }, { it.id }))
-                            group?.order == GroupOrder.BY_NAME -> raw.sortedBy { it.displayName() }
-                            else -> raw
-                        }
-                    }
-                }
-                .collect { profiles = it }
-        }
-    }
-
-    DisposableEffect(lifecycleOwner) {
+    DisposableEffect(lifecycleOwner, selectedGroupId) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                scope.launch {
-                    selectedGroupId = withContext(Dispatchers.IO) { DataStore.currentGroupId() }
-                    selectedProfileId = DataStore.selectedProxy
-                    groupRevision++
-                }
+                viewModel.loadProfiles()
             }
         }
         val listener = object : GroupManager.Listener {
@@ -155,9 +120,7 @@ fun ConfigurationScreen(
             override suspend fun groupRemoved(groupId: Long) = Unit
             override suspend fun groupUpdated(group: io.nekohasekai.sagernet.database.ProxyGroup) = groupUpdated(group.id)
             override suspend fun groupUpdated(groupId: Long) {
-                withContext(Dispatchers.Main) {
-                    if (groupId == selectedGroupId) groupRevision++
-                }
+                if (groupId == selectedGroupId) viewModel.loadProfiles()
             }
         }
         GroupManager.addListener(listener)
@@ -310,7 +273,7 @@ fun ConfigurationScreen(
                                     scope.launch {
                                         val id = withContext(Dispatchers.IO) { BuiltinPool.initialize() }
                                         DataStore.selectedGroup = id
-                                        selectedGroupId = id
+                                        viewModel.loadProfiles()
                                     }
                                 }) { Text("Открыть общий список") }
                             }
@@ -343,10 +306,7 @@ fun ConfigurationScreen(
                                     io.nekohasekai.sagernet.ktx.runOnDefaultDispatcher {
                                         val update = selectedProfileId != entity.id
                                         if (!update) return@runOnDefaultDispatcher
-                                        DataStore.selectedProxy = entity.id
-                                        kotlinx.coroutines.withContext(Dispatchers.Main) {
-                                            selectedProfileId = entity.id
-                                        }
+                                        viewModel.selectProfile(entity.id)
                                         if (serviceRunning && reloadAccess.tryLock()) {
                                             try {
                                                 SagerNet.reloadService()

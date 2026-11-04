@@ -99,7 +99,7 @@ object BatchProbeCoordinator {
             launch {
                 try { ordered.forEach { queue.send(it) } } finally { queue.close() }
             }
-            repeat(minOf(DataStore.connectionTestConcurrency.coerceIn(1, 20), profiles.size)) {
+            repeat(minOf(DataStore.connectionTestConcurrency.coerceIn(1, 128), profiles.size)) {
                 launch {
                     for (profile in queue) {
                         events.send(Event(profile.id))

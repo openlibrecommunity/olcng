@@ -132,7 +132,7 @@ fun SettingsScreen(
     var spoofDeviceModel by remember { mutableStateOf(DataStore.spoofDeviceModel) }
     var spoofUserAgent by remember { mutableStateOf(DataStore.spoofUserAgent) }
     var showSpoofUserAgentPresets by remember { mutableStateOf(false) }
-    var connectionTestConcurrency by remember { mutableStateOf(DataStore.connectionTestConcurrency.coerceIn(1, 20)) }
+    var connectionTestConcurrency by remember { mutableStateOf(DataStore.connectionTestConcurrency.coerceIn(1, 128)) }
     var showConnectionTestConcurrencyPicker by remember { mutableStateOf(false) }
 
     var trafficSniffing by remember { mutableStateOf(DataStore.trafficSniffing) }
@@ -395,6 +395,10 @@ fun SettingsScreen(
                 "10 workers" to 10,
                 "15 workers" to 15,
                 "20 workers" to 20,
+                "32 workers" to 32,
+                "64 workers" to 64,
+                "96 workers" to 96,
+                "128 workers" to 128,
             ),
             selected = connectionTestConcurrency,
             onSelect = { DataStore.connectionTestConcurrency = it; connectionTestConcurrency = it; showConnectionTestConcurrencyPicker = false },

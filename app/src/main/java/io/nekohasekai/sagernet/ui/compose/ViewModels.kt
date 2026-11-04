@@ -11,6 +11,17 @@ import io.nekohasekai.sagernet.database.ProxyEntity
 import io.nekohasekai.sagernet.database.ProxyGroup
 import io.nekohasekai.sagernet.database.RuleEntity
 import io.nekohasekai.sagernet.database.SagerDatabase
+import io.nekohasekai.sagernet.GroupOrder
+import io.nekohasekai.sagernet.group.BuiltinPool
+import io.nekohasekai.sagernet.bg.test.pingComparator
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,14 +39,44 @@ class ConfigurationViewModel(app: Application) : AndroidViewModel(app) {
     private val _currentGroup = MutableStateFlow<ProxyGroup?>(null)
     val currentGroup: StateFlow<ProxyGroup?> = _currentGroup.asStateFlow()
 
+    private val loadMutex = Mutex()
+    private var observation: Job? = null
+    private var observedGroupId: Long? = null
+
+    init {
+        loadProfiles()
+    }
+
     fun loadProfiles() {
         viewModelScope.launch(Dispatchers.IO) {
-            val groupId = DataStore.currentGroupId()
-            val group = SagerDatabase.groupDao.getById(groupId)
-            val list = SagerDatabase.proxyDao.getByGroup(groupId)
-            _currentGroup.value = group
-            _profiles.value = list
-            _selectedProfileId.value = DataStore.selectedProxy
+            loadMutex.withLock {
+                val groupId = DataStore.currentGroupId()
+                val group = SagerDatabase.groupDao.getById(groupId)
+                _selectedProfileId.value = DataStore.selectedProxy
+                if (observedGroupId == groupId && observation?.isActive == true) {
+                    _currentGroup.value = group
+                    return@withLock
+                }
+                observation?.cancelAndJoin()
+                observedGroupId = groupId
+                _currentGroup.value = group
+                val isPool = BuiltinPool.isPool(groupId)
+                observation = viewModelScope.launch(Dispatchers.IO) {
+                    SagerDatabase.proxyDao.getByGroupFlow(groupId)
+                        .conflate()
+                        .combine(_currentGroup) { profiles, currentGroup ->
+                            withContext(Dispatchers.Default) {
+                                when {
+                                    isPool || currentGroup?.order == GroupOrder.BY_DELAY ->
+                                        profiles.sortedWith(pingComparator({ it.status }, { it.ping }, { it.userOrder }, { it.id }))
+                                    currentGroup?.order == GroupOrder.BY_NAME -> profiles.sortedBy { it.displayName() }
+                                    else -> profiles
+                                }
+                            }
+                        }
+                        .collect { _profiles.value = it }
+                }
+            }
         }
     }
 

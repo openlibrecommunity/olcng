@@ -56,3 +56,5 @@ Migration versions: published OLCNG 4.3.0 uses versionCode 8003000 (regular) and
 Connection tests must preserve owenclave's full test config and upstream `Libexclavecore.urlTest` semantics: any received HTTP response measures latency, including 404. Validate network changes against a real profile known to work in owenclave; local fixtures alone are insufficient.
 
 Keep pool status compact: subscription title, short update/error status and small server count. Test progress replaces that same slot. Do not add a separate test panel, duplicate stop controls or persistent completion/cancellation messages. Reuse existing menu icons and component styles.
+
+Keep the default connection-test concurrency at 64 and respect the configured value. Switching tabs must preserve the server list and scroll position, including during active tests; keep profile observation in an activity-scoped ViewModel rather than disposable screen state.

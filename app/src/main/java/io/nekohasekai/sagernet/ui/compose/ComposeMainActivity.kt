@@ -472,6 +472,7 @@ fun MainScreen(
             PendingDeepLink.pendingDestination.value = null
         }
     }
+    val screenState = androidx.compose.runtime.saveable.rememberSaveableStateHolder()
     val snackbarHostState = remember { SnackbarHostState() }
     val probeProgress by io.nekohasekai.sagernet.bg.test.BatchProbeCoordinator.progress.collectAsState()
     val batchTestProgress = probeProgress?.let { it.completed to it.total }
@@ -512,34 +513,36 @@ fun MainScreen(
                 },
                 label = "screenTransition",
             ) { destination ->
-                when (destination) {
-                    NavDestination.CONFIGURATION -> ConfigurationScreen(
-                        onMenuClick = {},
-                        serviceRunning = serviceState.canStop,
-                        serviceConnected = serviceState == BaseService.State.Connected,
-                        batchTestProgress = batchTestProgress,
-                        onBatchTestProgress = {},
-                    )
-                    NavDestination.GROUP -> GroupScreen(onMenuClick = {})
-                    NavDestination.ROUTE -> RouteScreen(onMenuClick = {})
-                    NavDestination.SETTINGS -> SettingsScreen(
-                        onNavBarSizeChanged = { navBarSize = it },
-                        onMenuClick = {},
-                        onThemeChanged = onThemeChanged,
-                        onNightThemeChanged = onNightThemeChanged,
-                        onServiceModeChanged = onServiceModeChanged,
-                        migrationRetryAvailable = migrationRetryAvailable,
-                        startupRunning = startupRunning,
-                        onRetryMigration = onRetryMigration,
-                    )
-                    NavDestination.LOGCAT -> LogcatScreen(onMenuClick = {})
-                    NavDestination.TRAFFIC -> TrafficScreen(
-                        stats = appStats,
-                        onClearStats = onClearStats,
-                        serviceConnected = serviceState == BaseService.State.Connected,
-                        trafficStatsEnabled = DataStore.appTrafficStatistics,
-                    )
-                    NavDestination.TOOLS -> ToolsScreen(onMenuClick = {})
+                screenState.SaveableStateProvider(destination.name) {
+                    when (destination) {
+                        NavDestination.CONFIGURATION -> ConfigurationScreen(
+                            onMenuClick = {},
+                            serviceRunning = serviceState.canStop,
+                            serviceConnected = serviceState == BaseService.State.Connected,
+                            batchTestProgress = batchTestProgress,
+                            onBatchTestProgress = {},
+                        )
+                        NavDestination.GROUP -> GroupScreen(onMenuClick = {})
+                        NavDestination.ROUTE -> RouteScreen(onMenuClick = {})
+                        NavDestination.SETTINGS -> SettingsScreen(
+                            onNavBarSizeChanged = { navBarSize = it },
+                            onMenuClick = {},
+                            onThemeChanged = onThemeChanged,
+                            onNightThemeChanged = onNightThemeChanged,
+                            onServiceModeChanged = onServiceModeChanged,
+                            migrationRetryAvailable = migrationRetryAvailable,
+                            startupRunning = startupRunning,
+                            onRetryMigration = onRetryMigration,
+                        )
+                        NavDestination.LOGCAT -> LogcatScreen(onMenuClick = {})
+                        NavDestination.TRAFFIC -> TrafficScreen(
+                            stats = appStats,
+                            onClearStats = onClearStats,
+                            serviceConnected = serviceState == BaseService.State.Connected,
+                            trafficStatsEnabled = DataStore.appTrafficStatistics,
+                        )
+                        NavDestination.TOOLS -> ToolsScreen(onMenuClick = {})
+                    }
                 }
             }
 
