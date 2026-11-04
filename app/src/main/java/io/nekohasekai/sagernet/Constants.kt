@@ -19,7 +19,7 @@
 
 package io.nekohasekai.sagernet
 
-const val CONNECTION_TEST_URL = "https://api.ipify.org"
+const val CONNECTION_TEST_URL = "https://own.owenewans.org/ip"
 
 object Key {
 

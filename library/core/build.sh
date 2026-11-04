@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CGO_LDFLAGS="-Wl,-z,max-page-size=16384" gomobile bind -o libexclavecore.aar -v -androidapi 21 -trimpath -ldflags="-s -buildid=" -tags="with_clash" "github.com/exclavenetwork/libexclavecore" ./owenbatch || exit 1
+CGO_LDFLAGS="-Wl,-z,max-page-size=16384" gomobile bind -o libexclavecore.aar -v -androidapi 21 -trimpath -ldflags="-s -buildid=" -tags="with_clash" "github.com/exclavenetwork/libexclavecore" || exit 1
 
 proj=../../app/libs
 if [ -d $proj ]; then

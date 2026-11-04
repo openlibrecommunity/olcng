@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NetworkCheck
@@ -256,15 +257,19 @@ fun ProfileCard(
                         CircularWavyProgressIndicator(
                             modifier = Modifier.size(12.dp),
                         )
+                    } else if (failed) {
+                        Icon(
+                            Icons.Default.ErrorOutline,
+                            contentDescription = "Показать ошибку проверки",
+                            modifier = Modifier.size(16.dp).clickable { showProbeError = true },
+                            tint = MaterialTheme.colorScheme.error,
+                        )
                     } else if (resultLabel != null) {
                         Text(
                             text = resultLabel,
-                            modifier = if (failed) Modifier.clickable(onClickLabel = "Показать ошибку проверки") {
-                                showProbeError = true
-                            } else Modifier,
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (failed) MaterialTheme.colorScheme.error else if (entity.status == 1)
-                                MaterialTheme.colorScheme.primary else onContainerColor.copy(alpha = 0.6f),
+                            color = if (entity.status == 1) MaterialTheme.colorScheme.primary
+                            else onContainerColor.copy(alpha = 0.6f),
                         )
                     }
                 }
@@ -304,8 +309,9 @@ fun ProfileCard(
                     }
                     if (failed) {
                         DropdownMenuItem(
-                            text = { Text("Показать ошибку проверки") },
+                            text = { Text("Ошибка") },
                             onClick = { showMenu = false; showProbeError = true },
+                            leadingIcon = { Icon(Icons.Default.ErrorOutline, contentDescription = null, modifier = Modifier.size(20.dp)) },
                         )
                     }
                     if (onPing != null) {

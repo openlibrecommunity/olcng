@@ -48,7 +48,6 @@ jobs:
           GOFLAGS: -p=2
           GOMAXPROCS: 2
         run: |
-          (cd library/core && go test ./owenbatch)
           ./run lib core
           ./bin/lib/naive/download.sh
       - name: Signed migration candidates

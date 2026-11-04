@@ -2,7 +2,7 @@
 
 set CGO_LDFLAGS=-Wl,-z,max-page-size=16384
 
-gomobile bind -o libexclavecore.aar -v -androidapi 21 -tags="with_clash" "github.com/exclavenetwork/libexclavecore" ./owenbatch
+gomobile bind -o libexclavecore.aar -v -androidapi 21 -tags="with_clash" "github.com/exclavenetwork/libexclavecore"
 if errorlevel 1 (
     exit /b 1
 )

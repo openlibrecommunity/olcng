@@ -69,6 +69,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import io.nekohasekai.sagernet.bg.test.pingComparator
 import io.nekohasekai.sagernet.bg.test.BatchProbeCoordinator
 import io.nekohasekai.sagernet.ui.compose.components.BuiltinPoolStatus
+import io.nekohasekai.sagernet.ui.compose.components.InlineProbeStatus
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.sample
@@ -102,7 +103,6 @@ fun ConfigurationScreen(
     var showProtocolPicker by remember { mutableStateOf(false) }
     val pingingIds by BatchProbeCoordinator.testingIds.collectAsStateWithLifecycle()
     val progress by BatchProbeCoordinator.progress.collectAsStateWithLifecycle()
-    val outcome by BatchProbeCoordinator.outcome.collectAsStateWithLifecycle()
     val reloadAccess = remember { kotlinx.coroutines.sync.Mutex() }
     val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
     val startup by io.nekohasekai.sagernet.group.OwengStartup.state.collectAsStateWithLifecycle()
@@ -300,7 +300,10 @@ fun ConfigurationScreen(
                         ),
                     ) {
                         item(key = "__pool_status__") {
-                            if (isBuiltinGroup) BuiltinPoolStatus() else {
+                            val activeProgress = progress
+                            if (isBuiltinGroup) BuiltinPoolStatus(activeProgress) else if (activeProgress != null) {
+                                InlineProbeStatus(activeProgress, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                            } else {
                                 Text(selectedGroupName, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                     style = MaterialTheme.typography.titleMedium)
                                 androidx.compose.material3.TextButton(onClick = {
@@ -310,11 +313,6 @@ fun ConfigurationScreen(
                                         selectedGroupId = id
                                     }
                                 }) { Text("Открыть общий список") }
-                            }
-                        }
-                        if (progress != null || outcome != null) {
-                            item(key = "__probe_status__") {
-                                io.nekohasekai.sagernet.ui.compose.components.ProbeStatusCard(progress, outcome, selectedGroupId)
                             }
                         }
                         if (profiles.isEmpty()) {

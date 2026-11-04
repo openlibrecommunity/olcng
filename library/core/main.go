@@ -20,6 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package libexclavecore
 
 import (
-	// bind the unmodified upstream package together with ./owenbatch.
+	// bind the unmodified upstream package.
 	_ "github.com/exclavenetwork/libexclavecore"
 )
