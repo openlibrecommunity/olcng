@@ -62,7 +62,7 @@ class TaskerBundle(val bundle: Bundle) {
                     val entity = ProfileManager.getProfile(profileId)
                     if (entity != null) {
                         blurb = app.getString(
-                            R.string.tasker_blurb_start_profile, entity.displayName()
+                            R.string.tasker_blurb_start_profile, entity.displayLabel()
                         )
                     }
                 }

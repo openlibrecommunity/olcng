@@ -270,6 +270,12 @@ data class ProxyEntity(
     }
 
     fun displayName() = requireBean().displayName()
+
+    fun displayName(anonymize: Boolean): String = if (anonymize && id > 0) {
+        io.nekohasekai.sagernet.fmt.ProfileDisplayName.anonymous(requireBean().name.orEmpty(), id)
+    } else displayName()
+
+    fun displayLabel() = displayName(DataStore.anonymizeServerNames)
     fun displayAddress() = requireBean().displayAddress()
 
     fun requireBean(): AbstractBean {

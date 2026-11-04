@@ -114,7 +114,7 @@ class BaseService {
         private var statsLooper: Job? = null
 
         override fun getState(): Int = (data?.state ?: State.Idle).ordinal
-        override fun getProfileName(): String = data?.proxy?.profile?.displayName() ?: "Idle"
+        override fun getProfileName(): String = data?.proxy?.profile?.displayLabel() ?: "Idle"
 
         override fun registerCallback(cb: ISagerNetServiceCallback) {
             callbacks.register(cb)
@@ -499,9 +499,9 @@ class BaseService {
 
             val group = SagerDatabase.groupDao.getById(profile.groupId)
             data.notification = if (DataStore.showGroupName && group != null){
-                createNotification("[" + group.displayName() + "] " + profile.displayName())
+                createNotification("[" + group.displayName() + "] " + profile.displayLabel())
             } else {
-                createNotification(profile.displayName())
+                createNotification(profile.displayLabel())
             }
 
             data.changeState(State.Connecting)

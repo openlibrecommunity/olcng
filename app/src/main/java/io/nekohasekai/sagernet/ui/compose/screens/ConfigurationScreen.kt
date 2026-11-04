@@ -85,6 +85,7 @@ fun ConfigurationScreen(
 
     val viewModel: io.nekohasekai.sagernet.ui.compose.ConfigurationViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val profiles by viewModel.profiles.collectAsStateWithLifecycle()
+    val anonymizeNames by viewModel.anonymizeNames.collectAsStateWithLifecycle()
     val selectedProfileId by viewModel.selectedProfileId.collectAsStateWithLifecycle()
     val selectedGroup by viewModel.currentGroup.collectAsStateWithLifecycle()
     val selectedGroupId = selectedGroup?.id
@@ -300,6 +301,7 @@ fun ConfigurationScreen(
                                 connected = entity.id == selectedProfileId && serviceConnected,
                                 connectionStart = if (entity.id == selectedProfileId && serviceConnected) DataStore.connectionStart else 0L,
                                 pinging = entity.id in pingingIds,
+                                anonymizeNames = anonymizeNames,
                                 modifier = Modifier.animateItem(),
                                 onClick = {
                                     val entity = entity

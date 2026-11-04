@@ -51,9 +51,11 @@ oweng-fhs
 - Namespace: `io.nekohasekai.sagernet`
 - Go library: `libexclavecore` (built from `github.com/exclavenetwork/libexclavecore`)
 
-Migration versions: published OLCNG 4.3.0 uses versionCode 8003000 (regular) and 405300003 (F-Droid x86_64). The initial oweng build uses versionName 5.0.0 and base versionCode 600000000; keep codes above both old distributions.
+Migration versions: published OLCNG 4.3.0 uses versionCode 8003000 (regular) and 405300003 (F-Droid x86_64). The initial oweng candidates use versionName 5.0.0 and base versionCode 600000000; the published 5.0.0 release uses base 600000010. Keep subsequent codes above both old distributions and all migration candidates.
 
 Connection tests must preserve owenclave's full test config and upstream `Libexclavecore.urlTest` semantics: any received HTTP response measures latency, including 404. Validate network changes against a real profile known to work in owenclave; local fixtures alone are insufficient.
+
+Server-name anonymization is enabled by default: infer a country flag from the subscription name and append the stable Room profile ID, or use a globe when the country is unknown. Keep stored names, subscription matching, fingerprints and exports unchanged. Show the built-in pool only in Configuration; Groups contains user groups.
 
 Keep pool status compact: subscription title, short update/error status and small server count. Test progress replaces that same slot. Do not add a separate test panel, duplicate stop controls or persistent completion/cancellation messages. Reuse existing menu icons and component styles.
 

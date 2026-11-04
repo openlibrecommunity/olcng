@@ -124,6 +124,7 @@ fun SettingsScreen(
     var grpcServiceNameCompat by remember { mutableStateOf(DataStore.grpcServiceNameCompat) }
     var enableFragmentForDirect by remember { mutableStateOf(DataStore.enableFragmentForDirect) }
     var persistAcrossReboot by remember { mutableStateOf(DataStore.persistAcrossReboot) }
+    var anonymizeServerNames by remember { mutableStateOf(DataStore.anonymizeServerNames) }
     var presetProfileFields by remember { mutableStateOf(DataStore.presetProfileFields) }
     var sendHwid by remember { mutableStateOf(DataStore.sendHwid) }
     var showHwidConsentDialog by remember { mutableStateOf(false) }
@@ -691,6 +692,15 @@ fun SettingsScreen(
                     }
                 }
                 PreferenceGroup {
+                    item { shape ->
+                        SwitchPreferenceItem(
+                            title = "Обезличивать имена серверов",
+                            subtitle = "Флаг страны и номер вместо имени из подписки",
+                            checked = anonymizeServerNames,
+                            onCheckedChange = { anonymizeServerNames = it; DataStore.anonymizeServerNames = it },
+                            shape = shape,
+                        )
+                    }
                     item { shape ->
                         SwitchPreferenceItem(
                             title = "Auto Connect",

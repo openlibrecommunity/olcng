@@ -282,6 +282,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var showDirectSpeed by configurationStore.boolean(Key.SHOW_DIRECT_SPEED)
 
     /** Offer known values as a list in the profile editor instead of a blank text field. */
+    var anonymizeServerNames by configurationStore.boolean(Key.ANONYMIZE_SERVER_NAMES) { true }
     var presetProfileFields by configurationStore.boolean(Key.PRESET_PROFILE_FIELDS) { true }
 
     var persistAcrossReboot by configurationStore.boolean(Key.PERSIST_ACROSS_REBOOT)

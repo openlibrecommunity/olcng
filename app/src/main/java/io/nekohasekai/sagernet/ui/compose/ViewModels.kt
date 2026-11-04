@@ -39,6 +39,8 @@ class ConfigurationViewModel(app: Application) : AndroidViewModel(app) {
     private val _currentGroup = MutableStateFlow<ProxyGroup?>(null)
     val currentGroup: StateFlow<ProxyGroup?> = _currentGroup.asStateFlow()
 
+    private val _anonymizeNames = MutableStateFlow(DataStore.anonymizeServerNames)
+    val anonymizeNames: StateFlow<Boolean> = _anonymizeNames.asStateFlow()
     private val loadMutex = Mutex()
     private var observation: Job? = null
     private var observedGroupId: Long? = null
@@ -53,6 +55,7 @@ class ConfigurationViewModel(app: Application) : AndroidViewModel(app) {
                 val groupId = DataStore.currentGroupId()
                 val group = SagerDatabase.groupDao.getById(groupId)
                 _selectedProfileId.value = DataStore.selectedProxy
+                _anonymizeNames.value = DataStore.anonymizeServerNames
                 if (observedGroupId == groupId && observation?.isActive == true) {
                     _currentGroup.value = group
                     return@withLock
@@ -62,19 +65,20 @@ class ConfigurationViewModel(app: Application) : AndroidViewModel(app) {
                 _currentGroup.value = group
                 val isPool = BuiltinPool.isPool(groupId)
                 observation = viewModelScope.launch(Dispatchers.IO) {
-                    SagerDatabase.proxyDao.getByGroupFlow(groupId)
-                        .conflate()
-                        .combine(_currentGroup) { profiles, currentGroup ->
-                            withContext(Dispatchers.Default) {
-                                when {
-                                    isPool || currentGroup?.order == GroupOrder.BY_DELAY ->
-                                        profiles.sortedWith(pingComparator({ it.status }, { it.ping }, { it.userOrder }, { it.id }))
-                                    currentGroup?.order == GroupOrder.BY_NAME -> profiles.sortedBy { it.displayName() }
-                                    else -> profiles
-                                }
+                    combine(
+                        SagerDatabase.proxyDao.getByGroupFlow(groupId).conflate(),
+                        _currentGroup,
+                        _anonymizeNames,
+                    ) { profiles, currentGroup, anonymize ->
+                        withContext(Dispatchers.Default) {
+                            when {
+                                isPool || currentGroup?.order == GroupOrder.BY_DELAY ->
+                                    profiles.sortedWith(pingComparator({ it.status }, { it.ping }, { it.userOrder }, { it.id }))
+                                currentGroup?.order == GroupOrder.BY_NAME -> profiles.sortedBy { it.displayName(anonymize) }
+                                else -> profiles
                             }
                         }
-                        .collect { _profiles.value = it }
+                    }.collect { _profiles.value = it }
                 }
             }
         }

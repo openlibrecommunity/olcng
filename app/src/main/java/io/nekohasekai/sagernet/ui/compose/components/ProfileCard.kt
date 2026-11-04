@@ -70,6 +70,7 @@ fun ProfileCard(
     onPing: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
     pinging: Boolean = false,
+    anonymizeNames: Boolean = io.nekohasekai.sagernet.database.DataStore.anonymizeServerNames,
     connected: Boolean = false,
     connectionStart: Long = 0L,
     modifier: Modifier = Modifier,
@@ -126,7 +127,8 @@ fun ProfileCard(
     }
 
     // Distinctive per-profile MaterialShape derived from the profile name.
-    val seedShape = remember(entity.displayName()) { shapeForSeed(entity.displayName()) }
+    val displayName = entity.displayName(anonymizeNames)
+    val seedShape = remember(displayName) { shapeForSeed(displayName) }
 
     val iconContainer by animateColorAsState(
         targetValue = if (selected)
@@ -185,7 +187,7 @@ fun ProfileCard(
                 }
             }
             ShapedIcon(
-                icon = profileIconFor(entity.iconIndex, entity.displayName()),
+                icon = profileIconFor(entity.iconIndex, displayName),
                 containerColor = iconContainer,
                 contentColor = iconContent,
                 size = 48.dp,
@@ -199,7 +201,7 @@ fun ProfileCard(
                 modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    text = entity.displayName(),
+                    text = displayName,
                     style = MaterialTheme.typography.titleMedium,
                     color = onContainerColor,
                     maxLines = 1,

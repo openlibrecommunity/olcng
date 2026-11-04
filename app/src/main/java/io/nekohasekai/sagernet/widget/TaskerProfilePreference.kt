@@ -33,7 +33,7 @@ class TaskerProfilePreference : ReselectableSimpleMenuPreference {
         if (value == "1") {
             val taskerProfileId = DataStore.taskerProfileId
             if (taskerProfileId > 0) {
-                ProfileManager.getProfile(taskerProfileId)?.displayName()?.let {
+                ProfileManager.getProfile(taskerProfileId)?.displayLabel()?.let {
                     return it
                 }
             }

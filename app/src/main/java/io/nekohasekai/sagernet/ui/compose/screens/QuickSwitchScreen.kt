@@ -82,7 +82,7 @@ fun QuickSwitchScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = profile.displayName(),
+                                        text = profile.displayLabel(),
                                         style = MaterialTheme.typography.titleMedium,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,

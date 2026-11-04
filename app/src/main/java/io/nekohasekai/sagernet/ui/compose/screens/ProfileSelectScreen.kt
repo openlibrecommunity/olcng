@@ -87,7 +87,7 @@ fun ProfileSelectScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = profile.displayName(),
+                                        text = profile.displayLabel(),
                                         style = MaterialTheme.typography.titleMedium,
                                         color = if (isSelected)
                                             MaterialTheme.colorScheme.onPrimaryContainer

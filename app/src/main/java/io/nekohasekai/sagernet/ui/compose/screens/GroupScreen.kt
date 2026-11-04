@@ -64,7 +64,6 @@ import io.nekohasekai.sagernet.database.ProxyGroup
 import io.nekohasekai.sagernet.database.SagerDatabase
 import io.nekohasekai.sagernet.database.SubscriptionBean
 import io.nekohasekai.sagernet.group.BuiltinPool
-import io.nekohasekai.sagernet.ui.compose.components.BuiltinPoolStatus
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.nekohasekai.sagernet.group.GroupUpdater
 import io.nekohasekai.sagernet.ktx.applyDefaultValues
@@ -119,7 +118,7 @@ fun GroupScreen(
         if (reloadJob?.isActive == true) return
         reloadJob = scope.launch(Dispatchers.IO) {
             val poolId = poolGroupId ?: BuiltinPool.initialize()
-            val loaded = SagerDatabase.groupDao.allGroups()
+            val loaded = SagerDatabase.groupDao.allGroups().filterNot { it.id == poolId }
             val counts = loaded.associate { it.id to SagerDatabase.proxyDao.countByGroup(it.id).toInt() }
             withContext(Dispatchers.Main) {
                 poolGroupId = poolId
@@ -475,7 +474,6 @@ fun GroupScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 8.dp, bottom = io.nekohasekai.sagernet.ui.compose.components.StatsBarBottomInset),
                 ) {
-                    item(key = "__pool_status__") { BuiltinPoolStatus() }
                     items(groups, key = { it.id }) { group ->
                         val isPool = group.id == poolGroupId
                         GroupCard(

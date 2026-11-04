@@ -254,7 +254,7 @@ fun GroupSettingsScreen(
                     PreferenceItem(
                         title = "Front Proxy",
                         subtitle = if (frontProxy > 0) {
-                            runBlocking { SagerDatabase.proxyDao.getById(frontProxy)?.displayName() } ?: "None"
+                            runBlocking { SagerDatabase.proxyDao.getById(frontProxy)?.displayLabel() } ?: "None"
                         } else {
                             "None"
                         },
@@ -264,7 +264,7 @@ fun GroupSettingsScreen(
                     PreferenceItem(
                         title = "Landing Proxy",
                         subtitle = if (landingProxy > 0) {
-                            runBlocking { SagerDatabase.proxyDao.getById(landingProxy)?.displayName() } ?: "None"
+                            runBlocking { SagerDatabase.proxyDao.getById(landingProxy)?.displayLabel() } ?: "None"
                         } else {
                             "None"
                         },
@@ -319,7 +319,7 @@ private fun ProxyChainPickerDialog(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             val items = listOf<Pair<String, Long>>("None" to -1L) +
-                profiles.map { it.displayName() to it.id }
+                profiles.map { it.displayLabel() to it.id }
             items.forEach { (label, id) ->
                 val isSelected = id == selectedId
                 Surface(
