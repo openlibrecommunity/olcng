@@ -31,6 +31,9 @@ import io.nekohasekai.sagernet.ktx.tryResume
 import io.nekohasekai.sagernet.ktx.tryResumeWithException
 import io.nekohasekai.sagernet.utils.DefaultNetworkListener
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import libexclavecore.Libexclavecore
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.suspendCoroutine
@@ -38,6 +41,10 @@ import kotlin.coroutines.suspendCoroutine
 class V2RayTestInstance(profile: ProxyEntity, val link: String, val timeout: Int, val protectPath: String = "") : V2RayInstance(
     profile,
 ), LocalResolver {
+    companion object {
+        private val probeDispatcher = Dispatchers.IO.limitedParallelism(128)
+    }
+
     lateinit var continuation: Continuation<Int>
     suspend fun doTest(): Int {
         return suspendCoroutine { c ->
@@ -46,7 +53,7 @@ class V2RayTestInstance(profile: ProxyEntity, val link: String, val timeout: Int
                 Logs.w(it)
                 c.tryResumeWithException(it)
             }
-            runOnDefaultDispatcher {
+            GlobalScope.launch(probeDispatcher) {
                 try {
                     init()
                     launch()
