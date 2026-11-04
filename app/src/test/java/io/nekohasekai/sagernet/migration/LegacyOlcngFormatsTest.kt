@@ -10,6 +10,17 @@ import org.junit.Test
 
 class LegacyOlcngFormatsTest {
     @Test
+    fun missingProfileReferencesDoNotPreventImportingAvailableProfiles() {
+        val listed = listOf("deleted", "kept", "deleted")
+        val available = setOf("kept", "unlisted")
+        assertEquals(setOf("deleted"), LegacyOlcngFormats.missingProfileIds(listed, available))
+        assertEquals(listOf("kept", "unlisted"), LegacyOlcngFormats.pending(available, emptySet()))
+        assertTrue(LegacyOlcngFormats.pending(available, available.map {
+            LegacyOlcngFormats.stableKey("profile", it)
+        }.toSet()).isEmpty())
+    }
+
+    @Test
     fun vlessRealityAndXhttp() {
         val profile = LegacyOlcngFormats.profile("""{
             "configVersion":4,"configType":"VLESS","subscriptionId":"personal",

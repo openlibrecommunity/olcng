@@ -142,8 +142,8 @@ class ComposeMainActivity : ComponentActivity(), SagerConnection.Callback {
                     val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                         io.nekohasekai.sagernet.group.OwengStartup.initialize(this@ComposeMainActivity)
                     }
+                    startupReady = true
                     if (result.success) {
-                        startupReady = true
                         showIntro = io.nekohasekai.sagernet.migration.LegacyOlcngMigration.shouldShowIntro(this@ComposeMainActivity)
                     } else {
                         startupError = result.error ?: "Не удалось перенести данные OLCNG"
@@ -164,6 +164,23 @@ class ComposeMainActivity : ComponentActivity(), SagerConnection.Callback {
                 label = "rootBlur",
             )
             OwenclaveTheme(themeId = themeId, nightTheme = nightTheme) {
+                if (startupReady && startupError != null) {
+                    androidx.compose.material3.AlertDialog(
+                        onDismissRequest = { startupError = null },
+                        title = { Text("Перенос данных OLCNG") },
+                        text = { Text("${startupError!!}\n\nПриложением можно пользоваться. Исходные данные OLCNG не удалены.") },
+                        confirmButton = {
+                            androidx.compose.material3.TextButton(onClick = { startupError = null }) {
+                                Text("Продолжить")
+                            }
+                        },
+                        dismissButton = {
+                            androidx.compose.material3.TextButton(onClick = { startupAttempt++ }) {
+                                Text("Повторить перенос")
+                            }
+                        },
+                    )
+                }
                 if (showIntro) {
                     io.nekohasekai.sagernet.ui.compose.components.OwengIntroDialog {
                         io.nekohasekai.sagernet.migration.LegacyOlcngMigration.markIntroSeen(this@ComposeMainActivity)

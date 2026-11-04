@@ -40,6 +40,9 @@ internal object LegacyOlcngFormats {
     fun pending(keys: Collection<String>, existing: Set<String>): List<String> =
         keys.distinct().filterNot { stableKey("profile", it) in existing }
 
+    fun missingProfileIds(listed: Collection<String>, available: Set<String>): Set<String> =
+        listed.toSet() - available
+
     fun subscription(json: String): Subscription {
         val p = JsonParser.parseString(json).asJsonObject
         val bean = SubscriptionBean().apply {

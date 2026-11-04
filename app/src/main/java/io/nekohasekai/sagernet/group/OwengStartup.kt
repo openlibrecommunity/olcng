@@ -15,15 +15,23 @@ object OwengStartup {
     private val networkOwner = Any()
 
     suspend fun initialize(context: Context): LegacyOlcngMigration.MigrationResult = mutex.withLock {
-        if (ready) return@withLock result
+        if (ready && result.success) return@withLock result
         result = LegacyOlcngMigration.migrate(context)
-        if (!result.success) return@withLock result
         androidx.work.multiprocess.RemoteWorkManager.getInstance(context).cancelUniqueWork("subscription_updater")
         val groupId = BuiltinPool.initialize()
         val migratedNow = LegacyOlcngMigration.hasLegacyData(context) && !result.alreadyMigrated
         if (migratedNow || SagerDatabase.groupDao.getById(DataStore.selectedGroup) == null) {
             DataStore.selectedGroup = groupId
         }
+        if (!ready) {
+            startNetworkListener()
+        }
+        BuiltinPool.requestRefresh("startup")
+        ready = true
+        result
+    }
+
+    private suspend fun startNetworkListener() {
         var lastNetworkState: String? = null
         DefaultNetworkListener.start(networkOwner) { network ->
             val capabilities = network?.let { io.nekohasekai.sagernet.SagerNet.connectivity.getNetworkCapabilities(it) }
@@ -35,8 +43,5 @@ object OwengStartup {
                 if (network != null) BuiltinPool.onConnectivityChanged()
             }
         }
-        BuiltinPool.requestRefresh("startup")
-        ready = true
-        result
     }
 }

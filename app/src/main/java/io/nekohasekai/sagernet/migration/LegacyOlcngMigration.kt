@@ -114,8 +114,9 @@ object LegacyOlcngMigration {
                     val json = checkNotNull(main?.decodeString(key)) { "unreadable MAIN/$key" }
                     JsonParser.parseString(json).asJsonArray.map { it.asString }
                 }.toSet()
-            check((listed - profiles.keys).isEmpty()) {
-                "MAIN references ${ (listed - profiles.keys).size } missing profiles; backup preserved, retry or manual recovery required"
+            val missingProfiles = LegacyOlcngFormats.missingProfileIds(listed, profiles.keys)
+            if (missingProfiles.isNotEmpty()) {
+                warnings.add("${missingProfiles.size} profile IDs in MAIN have no PROFILE_FULL_CONFIG entry; backup preserved")
             }
             // orphan raw configurations are retained on disk, not silently discarded.
             (raw.keys - profiles.keys).takeIf { it.isNotEmpty() }?.let {
@@ -205,6 +206,11 @@ object LegacyOlcngMigration {
             }
             if (!selectedGuid.isNullOrBlank() && selectedId == null) warnings.add("selected profile is unavailable; original GUID preserved in backup")
             warnings.add("Original settings, affiliations, favorites and unsupported fields are retained in the private MMKV backup")
+            if (missingProfiles.isNotEmpty()) {
+                return MigrationResult(false, importedProfiles = imported, importedSubscriptions = importedSubs,
+                    backupPath = backup.absolutePath, warnings = warnings, databaseCommitted = true,
+                    error = "В старом списке отсутствуют данные ${missingProfiles.size} профилей. Доступные профили перенесены, исходные файлы сохранены. Перенос можно повторить.")
+            }
             if (!preferences.edit().putBoolean(DONE, true).putString("backup", backup.absolutePath).commit()) {
                 preferences.edit().remove(DONE).commit()
                 error("cannot save completion marker; retry is safe")

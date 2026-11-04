@@ -69,6 +69,11 @@ jobs:
           ./gradlew :app:testOssReleaseUnitTest :app:testFdroidReleaseUnitTest :app:assembleOssRelease :app:assembleFdroidRelease
       - uses: actions/upload-artifact@v7
         with:
+          name: oweng-phone-fdroid-arm64
+          path: app/build/outputs/apk/fdroid/release/Oweng-5.0.0-fdroid-arm64-v8a.apk
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
           name: oweng-migration-apks
           path: |
             app/build/outputs/apk/oss/release/*.apk
