@@ -34,12 +34,15 @@ object LegacyOlcngMigration {
         val warnings: List<String> = emptyList(),
         val error: String? = null,
         val databaseCommitted: Boolean = false,
+        val deferred: Boolean = false,
     )
 
     private val mutex = Mutex()
     private val ids = listOf("MAIN", "PROFILE_FULL_CONFIG", "SERVER_RAW", "SERVER_AFF", "SUB", "SETTING")
     private const val PREFS = "olcng-migration-v1"
     private const val DONE = "completed"
+    private const val DEFERRED = "deferred"
+    private const val SETTINGS_APPLIED = "settings-applied"
 
     fun hasLegacyData(context: Context): Boolean = ids.any {
         File(context.filesDir, "mmkv/$it").let { file -> file.isFile && file.length() > 0 }
@@ -52,21 +55,44 @@ object LegacyOlcngMigration {
         check(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean("intro-seen", true).commit())
     }
 
-    suspend fun migrate(context: Context): MigrationResult = withContext(Dispatchers.IO) {
+    suspend fun acknowledge(context: Context) = withContext(Dispatchers.IO) {
+        mutex.withLock {
+            check(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                .putBoolean(DEFERRED, true).commit())
+        }
+    }
+
+    suspend fun migrate(context: Context, retry: Boolean = false): MigrationResult = withContext(Dispatchers.IO) {
         mutex.withLock {
             // serialize different android processes as well as coroutines.
             RandomAccessFile(File(context.filesDir, "olcng-migration.lock"), "rw").use { lockFile ->
-                lockFile.channel.lock().use { migrateLocked(context.applicationContext) }
+                lockFile.channel.lock().use {
+                    val result = migrateLocked(context.applicationContext, retry)
+                    if (!result.success && !result.deferred) {
+                        check(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                            .putString("last-error", result.error)
+                            .putString("backup", result.backupPath)
+                            .putBoolean("database-committed", result.databaseCommitted).commit())
+                    }
+                    result
+                }
             }
         }
     }
 
-    private suspend fun migrateLocked(context: Context): MigrationResult {
+    private suspend fun migrateLocked(context: Context, retry: Boolean): MigrationResult {
         val preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         if (preferences.getBoolean(DONE, false)) return MigrationResult(
             true, alreadyMigrated = true, backupPath = preferences.getString("backup", null), databaseCommitted = true,
         )
+        if (!retry && preferences.getBoolean(DEFERRED, false)) return MigrationResult(
+            false, deferred = true, backupPath = preferences.getString("backup", null),
+            error = preferences.getString("last-error", null),
+            databaseCommitted = preferences.getBoolean("database-committed", false),
+        )
         if (!hasLegacyData(context)) return MigrationResult(true)
+        val previousProxy = DataStore.selectedProxy
+        val previousGroup = DataStore.selectedGroup
         var backup: File? = null
         var work: File? = null
         var committed = false
@@ -194,15 +220,22 @@ object LegacyOlcngMigration {
             }
             committed = true
             // configurationStore is a separate database and cannot join the profile transaction.
-            settings.probeUrl?.let { DataStore.connectionTestURL = it }
-            settings.remoteDns?.let { DataStore.remoteDns = it }
-            settings.directDns?.let { DataStore.directDns = it }
-            settings.proxyApps?.let { DataStore.proxyApps = it && !settings.packages.isNullOrEmpty() }
-            settings.bypass?.let { DataStore.bypass = it }
-            settings.packages?.let { DataStore.individual = it.sorted().joinToString("\n") }
-            selectedId?.let {
-                DataStore.selectedProxy = it
-                db.proxyDao().getById(it)?.let { profile -> DataStore.selectedGroup = profile.groupId }
+            if (!preferences.getBoolean(SETTINGS_APPLIED, false) && !preferences.getBoolean(DEFERRED, false)) {
+                settings.probeUrl?.let { DataStore.connectionTestURL = it }
+                settings.remoteDns?.let { DataStore.remoteDns = it }
+                settings.directDns?.let { DataStore.directDns = it }
+                settings.proxyApps?.let { DataStore.proxyApps = it && !settings.packages.isNullOrEmpty() }
+                settings.bypass?.let { DataStore.bypass = it }
+                settings.packages?.let { DataStore.individual = it.sorted().joinToString("\n") }
+                check(preferences.edit().putBoolean(SETTINGS_APPLIED, true).commit())
+                selectedId?.let {
+                    if (DataStore.selectedProxy == previousProxy && db.proxyDao().getById(previousProxy) == null) {
+                        DataStore.selectedProxy = it
+                        if (DataStore.selectedGroup == previousGroup && db.groupDao().getById(previousGroup) == null) {
+                            db.proxyDao().getById(it)?.let { profile -> DataStore.selectedGroup = profile.groupId }
+                        }
+                    }
+                }
             }
             if (!selectedGuid.isNullOrBlank() && selectedId == null) warnings.add("selected profile is unavailable; original GUID preserved in backup")
             warnings.add("Original settings, affiliations, favorites and unsupported fields are retained in the private MMKV backup")

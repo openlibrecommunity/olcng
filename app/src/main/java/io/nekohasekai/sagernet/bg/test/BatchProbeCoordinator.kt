@@ -16,6 +16,7 @@ import io.nekohasekai.sagernet.ktx.app
 import io.nekohasekai.sagernet.plugin.PluginManager
 import io.nekohasekai.sagernet.utils.DefaultNetworkListener
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +26,15 @@ import kotlinx.coroutines.sync.withPermit
 import owenbatch.Owenbatch
 import owenbatch.Session
 
-data class ProbeProgress(val completed: Int, val total: Int, val groupId: Long)
+data class ProbeProgress(
+    val completed: Int,
+    val total: Int,
+    val groupId: Long,
+    val succeeded: Int = 0,
+    val failed: Int = 0,
+)
+
+data class ProbeOutcome(val progress: ProbeProgress, val cancelled: Boolean, val error: String? = null)
 
 object BatchProbeCoordinator {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, error -> Logs.w(error) })
@@ -36,6 +45,9 @@ object BatchProbeCoordinator {
     val progress: StateFlow<ProbeProgress?> = mutableProgress.asStateFlow()
     private val mutableTestingIds = MutableStateFlow<Set<Long>>(emptySet())
     val testingIds: StateFlow<Set<Long>> = mutableTestingIds.asStateFlow()
+
+    private val mutableOutcome = MutableStateFlow<ProbeOutcome?>(null)
+    val outcome: StateFlow<ProbeOutcome?> = mutableOutcome.asStateFlow()
 
     // upstream caches its dialer and resolver process-wide, so keep this bridge alive.
     private object Resolver : LocalResolver {
@@ -71,7 +83,27 @@ object BatchProbeCoordinator {
     private data class Result(val id: Long, val status: Int, val ping: Int, val error: String?)
     private data class Event(val id: Long, val result: Result? = null)
 
-    private suspend fun runProbes(groupId: Long, profiles: List<ProxyEntity>) = coroutineScope {
+    private suspend fun runProbes(groupId: Long, profiles: List<ProxyEntity>) {
+        mutableOutcome.value = null
+        mutableProgress.value = ProbeProgress(0, profiles.size, groupId)
+        var cancelled = false
+        var failure: String? = null
+        try {
+            executeProbes(groupId, profiles)
+        } catch (error: CancellationException) {
+            cancelled = true
+            throw error
+        } catch (error: Exception) {
+            failure = error.message ?: error.toString()
+            Logs.w(error)
+        } finally {
+            mutableProgress.value?.let { mutableOutcome.value = ProbeOutcome(it, cancelled, failure) }
+            mutableTestingIds.value = emptySet()
+            mutableProgress.value = null
+        }
+    }
+
+    private suspend fun executeProbes(groupId: Long, profiles: List<ProxyEntity>) = coroutineScope {
         if (!listening) {
             DefaultNetworkListener.start(Resolver) { Resolver.underlyingNetwork = it }
             listening = true
@@ -79,6 +111,7 @@ object BatchProbeCoordinator {
         val protectPath = if (DataStore.tunImplementation == TunImplementation.SYSTEM &&
             DataStore.serviceMode == Key.MODE_VPN && SagerNet.started && DataStore.startedProfile > 0
         ) app.cacheDir.toString() + "/protect_path" else ""
+        Resolver.underlyingNetwork = null
         withTimeoutOrNull(DataStore.connectionTestTimeout.coerceIn(100, 120000).toLong()) {
             Resolver.underlyingNetwork = DefaultNetworkListener.get()
         }
@@ -90,50 +123,45 @@ object BatchProbeCoordinator {
         val selected = DataStore.selectedProxy
         val ordered = profiles.sortedWith(compareBy<ProxyEntity> { it.id != selected }.thenBy { it.status != 1 })
         val queue = Channel<ProxyEntity>(64)
-        val events = Channel<Event>(128)
         val fallback = Semaphore(4)
         val link = DataStore.connectionTestURL
         val timeout = DataStore.connectionTestTimeout.coerceIn(100, 120000)
-        mutableProgress.value = ProbeProgress(0, profiles.size, groupId)
         try {
-            launch {
-                try { ordered.forEach { queue.send(it) } } finally { queue.close() }
-            }
-            val workers = List(minOf(DataStore.connectionTestConcurrency.coerceIn(1, 128), profiles.size)) {
+            runProbePipeline<Event>(produce = { events ->
                 launch {
-                    for (profile in queue) {
-                        events.send(Event(profile.id))
-                        val result = try {
-                            val config = buildV2RayConfig(profile, forTest = true)
-                            val needsFallback = profile.type == ProxyEntity.TYPE_CONFIG ||
-                                profile.type == ProxyEntity.TYPE_BALANCER || config.requireWs || config.requireSh ||
-                                config.index.any { index -> index.isBalancer || index.chain.values.any { it.requireBean() is NaiveBean } } ||
-                                config.config.contains("\"plugin\"")
-                            val ping = if (needsFallback) fallback.withPermit {
-                                V2RayTestInstance(profile, link, timeout, protectPath).use { instance ->
-                                    instance.prepareBatch(config)
-                                    nativeCall(native) { instance.probeBatch(native) }
-                                }
-                            } else nativeCall(native) { native.probe(config.config, link, timeout) }
-                            Result(profile.id, 1, ping, null)
-                        } catch (error: CancellationException) {
-                            throw error
-                        } catch (error: Exception) {
-                            ensureActive()
-                            Result(profile.id, if (error is PluginManager.PluginNotFoundException) -1 else 3, 0, error.message)
+                    try { ordered.forEach { queue.send(it) } } finally { queue.close() }
+                }
+                repeat(minOf(DataStore.connectionTestConcurrency.coerceIn(1, 128), profiles.size)) {
+                    launch {
+                        for (profile in queue) {
+                            events.send(Event(profile.id))
+                            val result = try {
+                                val config = buildV2RayConfig(profile, forTest = true)
+                                val needsFallback = profile.type == ProxyEntity.TYPE_CONFIG ||
+                                    profile.type == ProxyEntity.TYPE_BALANCER || config.requireWs || config.requireSh ||
+                                    config.index.any { index -> index.isBalancer || index.chain.values.any { it.requireBean() is NaiveBean } } ||
+                                    config.config.contains("\"plugin\"")
+                                val ping = if (needsFallback) fallback.withPermit {
+                                    V2RayTestInstance(profile, link, timeout, protectPath).use { instance ->
+                                        instance.prepareBatch(config)
+                                        nativeCall(native) { instance.probeBatch(native) }
+                                    }
+                                } else nativeCall(native) { native.probe(config.config, link, timeout) }
+                                Result(profile.id, 1, ping, null)
+                            } catch (error: CancellationException) {
+                                throw error
+                            } catch (error: Exception) {
+                                ensureActive()
+                                Result(profile.id, if (error is PluginManager.PluginNotFoundException) -1 else 3, 0, error.message)
+                            }
+                            events.trySend(Event(profile.id, result)).getOrThrow()
                         }
-                        ensureActive()
-                        events.send(Event(profile.id, result))
                     }
                 }
-            }
-            launch { workers.joinAll(); events.close() }
-            collectResults(groupId, profiles.size, events)
+            }, collect = { events -> collectResults(groupId, profiles.size, events) })
         } finally {
             native.cancel()
             synchronized(control) { if (session === native) session = null }
-            mutableTestingIds.value = emptySet()
-            mutableProgress.value = null
         }
     }
 
@@ -148,10 +176,12 @@ object BatchProbeCoordinator {
         }
     }
 
-    private suspend fun collectResults(groupId: Long, total: Int, events: Channel<Event>) {
+    private suspend fun collectResults(groupId: Long, total: Int, events: ReceiveChannel<Event>) {
         val active = mutableSetOf<Long>()
         val pending = ArrayList<Result>(32)
         var completed = 0
+        var succeeded = 0
+        var failed = 0
         var lastFlush = SystemClock.elapsedRealtime()
         fun flush() {
             if (pending.isNotEmpty()) {
@@ -161,7 +191,7 @@ object BatchProbeCoordinator {
                 pending.clear()
             }
             mutableTestingIds.value = active.toSet()
-            mutableProgress.value = ProbeProgress(completed, total, groupId)
+            mutableProgress.value = ProbeProgress(completed, total, groupId, succeeded, failed)
             lastFlush = SystemClock.elapsedRealtime()
         }
         try {
@@ -174,6 +204,7 @@ object BatchProbeCoordinator {
                         active.remove(it.id)
                         pending.add(it.result)
                         completed++
+                        if (it.result.status == 1) succeeded++ else failed++
                     }
                 }
                 if (pending.size >= 32 || SystemClock.elapsedRealtime() - lastFlush >= 200) flush()
@@ -181,7 +212,7 @@ object BatchProbeCoordinator {
         } finally {
             // only completed results are persisted; cancelled probes keep their old state.
             flush()
-            Logs.i("probe batch: $completed/$total, cancelled=${!currentCoroutineContext().isActive}")
+            Logs.i("probe batch: $completed/$total, succeeded=$succeeded, failed=$failed")
         }
     }
 }

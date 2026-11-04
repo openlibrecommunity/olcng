@@ -81,6 +81,9 @@ fun SettingsScreen(
     onNightThemeChanged: (Int) -> Unit = {},
     onNavBarSizeChanged: (Int) -> Unit = {},
     onServiceModeChanged: () -> Unit = {},
+    migrationRetryAvailable: Boolean = false,
+    startupRunning: Boolean = false,
+    onRetryMigration: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var showThemePicker by remember { mutableStateOf(false) }
@@ -675,6 +678,18 @@ fun SettingsScreen(
             Column(modifier = Modifier.padding(bottom = io.nekohasekai.sagernet.ui.compose.components.StatsBarBottomInset)) {
                 // ── General ──
                 PreferenceHeader("General")
+                if (migrationRetryAvailable) {
+                    PreferenceGroup {
+                        item { shape ->
+                            PreferenceItem(
+                                title = "Перенос данных OLCNG",
+                                subtitle = if (startupRunning) "Перенос выполняется в фоне" else "Повторить перенос сохранённых данных",
+                                onClick = { if (!startupRunning) onRetryMigration() },
+                                shape = shape,
+                            )
+                        }
+                    }
+                }
                 PreferenceGroup {
                     item { shape ->
                         SwitchPreferenceItem(

@@ -9,6 +9,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NetworkCheck
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -37,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +53,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.nekohasekai.sagernet.bg.test.probeFailed
+import io.nekohasekai.sagernet.bg.test.probeResultLabel
 import io.nekohasekai.sagernet.database.ProxyEntity
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -97,6 +102,17 @@ fun ProfileCard(
     )
 
     var showMenu by remember { mutableStateOf(false) }
+    var showProbeError by remember(entity.id) { mutableStateOf(false) }
+    val failed = probeFailed(entity.status, entity.ping)
+    val resultLabel = probeResultLabel(entity.status, entity.ping)
+    if (showProbeError) {
+        AlertDialog(
+            onDismissRequest = { showProbeError = false },
+            title = { Text("Ошибка проверки") },
+            text = { Text(entity.error?.takeIf { it.isNotBlank() } ?: "Проверка соединения не удалась") },
+            confirmButton = { TextButton(onClick = { showProbeError = false }) { Text("Закрыть") } },
+        )
+    }
 
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     LaunchedEffect(connected, connectionStart) {
@@ -240,21 +256,15 @@ fun ProfileCard(
                         CircularWavyProgressIndicator(
                             modifier = Modifier.size(12.dp),
                         )
-                    } else if (entity.ping > 0) {
+                    } else if (resultLabel != null) {
                         Text(
-                            text = "${entity.ping}ms",
+                            text = resultLabel,
+                            modifier = if (failed) Modifier.clickable(onClickLabel = "Показать ошибку проверки") {
+                                showProbeError = true
+                            } else Modifier,
                             style = MaterialTheme.typography.labelSmall,
-                            color = when (entity.status) {
-                                1 -> Color(0xFF4CAF50)
-                                3 -> Color(0xFFF44336)
-                                else -> onContainerColor.copy(alpha = 0.6f)
-                            },
-                        )
-                    } else if (entity.ping == -1) {
-                        Text(
-                            text = "failed",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color(0xFFF44336),
+                            color = if (failed) MaterialTheme.colorScheme.error else if (entity.status == 1)
+                                MaterialTheme.colorScheme.primary else onContainerColor.copy(alpha = 0.6f),
                         )
                     }
                 }
@@ -290,6 +300,12 @@ fun ProfileCard(
                             text = { Text("Share") },
                             onClick = { showMenu = false; onShare() },
                             leadingIcon = { Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                        )
+                    }
+                    if (failed) {
+                        DropdownMenuItem(
+                            text = { Text("Показать ошибку проверки") },
+                            onClick = { showMenu = false; showProbeError = true },
                         )
                     }
                     if (onPing != null) {

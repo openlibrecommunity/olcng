@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Entity(tableName = "pool_registry")
 data class PoolRegistry(
@@ -32,6 +33,14 @@ data class PoolMembership(
     val profileId: Long,
 )
 
+data class PoolSourceStatus(
+    val id: String,
+    val url: String,
+    val hasContent: Boolean,
+    val lastSuccess: Long,
+    val lastError: String?,
+)
+
 @Dao
 interface PoolDao {
     @Query("SELECT * FROM pool_registry WHERE id = 'builtin'")
@@ -42,6 +51,15 @@ interface PoolDao {
 
     @Query("SELECT * FROM pool_sources")
     fun sources(): List<PoolSource>
+
+    @Query("SELECT id, url, content IS NOT NULL AND length(content) > 0 AS hasContent, lastSuccess, lastError FROM pool_sources ORDER BY id")
+    fun observeSources(): Flow<List<PoolSourceStatus>>
+
+    @Query("SELECT COUNT(*) FROM proxy_entities WHERE groupId = (SELECT groupId FROM pool_registry WHERE id = 'builtin')")
+    fun observeProfileCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM pool_memberships")
+    fun membershipCount(): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun putSources(sources: List<PoolSource>)

@@ -47,7 +47,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Transform
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
@@ -89,6 +88,8 @@ import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.database.ProfileManager
 import io.nekohasekai.sagernet.database.ProxyEntity
 import io.nekohasekai.sagernet.database.SagerDatabase
+import io.nekohasekai.sagernet.group.OwengStartup
+import io.nekohasekai.sagernet.migration.LegacyOlcngMigration
 import io.nekohasekai.sagernet.ktx.runOnDefaultDispatcher
 import io.nekohasekai.sagernet.ktx.runOnMainDispatcher
 import io.nekohasekai.sagernet.ui.compose.components.ServiceState
@@ -129,30 +130,17 @@ class ComposeMainActivity : ComponentActivity(), SagerConnection.Callback {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        OwengStartup.start(this)
         connection.connect(this, this)
 
         setContent {
-            var startupReady by remember { mutableStateOf(false) }
-            var startupError by remember { mutableStateOf<String?>(null) }
-            var startupAttempt by remember { mutableIntStateOf(0) }
+            val startup by OwengStartup.state.collectAsState()
+            val migration = startup.migration
+            var dismissedMigration by remember { mutableStateOf<LegacyOlcngMigration.MigrationResult?>(null) }
             var showIntro by remember { mutableStateOf(false) }
-            LaunchedEffect(startupAttempt) {
-                startupError = null
-                try {
-                    val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                        io.nekohasekai.sagernet.group.OwengStartup.initialize(this@ComposeMainActivity)
-                    }
-                    startupReady = true
-                    if (result.success) {
-                        showIntro = io.nekohasekai.sagernet.migration.LegacyOlcngMigration.shouldShowIntro(this@ComposeMainActivity)
-                    } else {
-                        startupError = result.error ?: "Не удалось перенести данные OLCNG"
-                    }
-                } catch (e: kotlinx.coroutines.CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    io.nekohasekai.sagernet.ktx.Logs.w(e)
-                    startupError = e.message ?: "Не удалось подготовить список"
+            LaunchedEffect(startup.running, migration) {
+                if (!startup.running && migration?.success == true) {
+                    showIntro = LegacyOlcngMigration.shouldShowIntro(this@ComposeMainActivity)
                 }
             }
             var themeId by remember { mutableIntStateOf(DataStore.appTheme) }
@@ -164,18 +152,25 @@ class ComposeMainActivity : ComponentActivity(), SagerConnection.Callback {
                 label = "rootBlur",
             )
             OwenclaveTheme(themeId = themeId, nightTheme = nightTheme) {
-                if (startupReady && startupError != null) {
+                if (!startup.running && migration != null && !migration.success && !migration.deferred && dismissedMigration != migration) {
+                    val acknowledge = {
+                        dismissedMigration = migration
+                        OwengStartup.acknowledgeMigration(this@ComposeMainActivity)
+                    }
                     androidx.compose.material3.AlertDialog(
-                        onDismissRequest = { startupError = null },
+                        onDismissRequest = acknowledge,
                         title = { Text("Перенос данных OLCNG") },
-                        text = { Text("${startupError!!}\n\nПриложением можно пользоваться. Исходные данные OLCNG не удалены.") },
+                        text = { Text("${migration.error ?: "Не удалось перенести данные OLCNG"}\n\nПриложением можно пользоваться. Исходные данные OLCNG не удалены. Повторить перенос можно в настройках.") },
                         confirmButton = {
-                            androidx.compose.material3.TextButton(onClick = { startupError = null }) {
+                            androidx.compose.material3.TextButton(onClick = acknowledge) {
                                 Text("Продолжить")
                             }
                         },
                         dismissButton = {
-                            androidx.compose.material3.TextButton(onClick = { startupAttempt++ }) {
+                            androidx.compose.material3.TextButton(onClick = {
+                                dismissedMigration = null
+                                OwengStartup.start(this@ComposeMainActivity, retryMigration = true)
+                            }) {
                                 Text("Повторить перенос")
                             }
                         },
@@ -196,24 +191,13 @@ class ComposeMainActivity : ComponentActivity(), SagerConnection.Callback {
                             .blur(blurRadius),
                         color = MaterialTheme.colorScheme.surfaceContainer,
                     ) {
-                        if (!startupReady) {
-                            androidx.compose.foundation.layout.Column(
-                                modifier = Modifier.fillMaxSize().padding(24.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                            ) {
-                                if (startupError == null) {
-                                    CircularProgressIndicator()
-                                    Text("Подготовка списка…", modifier = Modifier.padding(top = 16.dp))
-                                } else {
-                                    Text("Не удалось перенести данные. Исходные файлы OLCNG сохранены")
-                                    Text(startupError!!, modifier = Modifier.padding(top = 12.dp))
-                                    androidx.compose.material3.TextButton(onClick = { startupAttempt++ }) {
-                                        Text("Повторить")
-                                    }
-                                }
-                            }
-                        } else MainScreen(
+                        MainScreen(
+                            migrationRetryAvailable = migration?.success == false,
+                            startupRunning = startup.running,
+                            onRetryMigration = {
+                                dismissedMigration = null
+                                OwengStartup.start(this@ComposeMainActivity, retryMigration = true)
+                            },
                             serviceState = serviceState.value,
                             onServiceToggle = { toggleService() },
                             uplinkSpeed = uplinkSpeed.value,
@@ -474,6 +458,9 @@ fun MainScreen(
     onThemeChanged: (Int) -> Unit = {},
     onNightThemeChanged: (Int) -> Unit = {},
     onServiceModeChanged: () -> Unit = {},
+    migrationRetryAvailable: Boolean = false,
+    startupRunning: Boolean = false,
+    onRetryMigration: () -> Unit = {},
 ) {
     var currentDestination by remember { mutableStateOf(NavDestination.CONFIGURATION) }
     val pendingDestination by PendingDeepLink.pendingDestination
@@ -541,6 +528,9 @@ fun MainScreen(
                         onThemeChanged = onThemeChanged,
                         onNightThemeChanged = onNightThemeChanged,
                         onServiceModeChanged = onServiceModeChanged,
+                        migrationRetryAvailable = migrationRetryAvailable,
+                        startupRunning = startupRunning,
+                        onRetryMigration = onRetryMigration,
                     )
                     NavDestination.LOGCAT -> LogcatScreen(onMenuClick = {})
                     NavDestination.TRAFFIC -> TrafficScreen(

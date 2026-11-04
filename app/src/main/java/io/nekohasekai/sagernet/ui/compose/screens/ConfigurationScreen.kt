@@ -66,6 +66,7 @@ import io.nekohasekai.sagernet.ui.compose.components.ProfileCard
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import io.nekohasekai.sagernet.bg.test.pingComparator
 import io.nekohasekai.sagernet.bg.test.BatchProbeCoordinator
 import io.nekohasekai.sagernet.ui.compose.components.BuiltinPoolStatus
 import kotlinx.coroutines.flow.collect
@@ -101,8 +102,18 @@ fun ConfigurationScreen(
     var showProtocolPicker by remember { mutableStateOf(false) }
     val pingingIds by BatchProbeCoordinator.testingIds.collectAsStateWithLifecycle()
     val progress by BatchProbeCoordinator.progress.collectAsStateWithLifecycle()
+    val outcome by BatchProbeCoordinator.outcome.collectAsStateWithLifecycle()
     val reloadAccess = remember { kotlinx.coroutines.sync.Mutex() }
     val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    val startup by io.nekohasekai.sagernet.group.OwengStartup.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(startup.running) {
+        if (!startup.running) {
+            selectedGroupId = withContext(Dispatchers.IO) { DataStore.currentGroupId() }
+            selectedProfileId = DataStore.selectedProxy
+            groupRevision++
+        }
+    }
 
     LaunchedEffect(progress) {
         onBatchTestProgress(progress?.let { it.completed to it.total })
@@ -117,9 +128,10 @@ fun ConfigurationScreen(
                 .mapLatest { raw ->
                     withContext(Dispatchers.Default) {
                         val group = SagerDatabase.groupDao.getById(groupId)
-                        when (group?.order) {
-                            GroupOrder.BY_NAME -> raw.sortedBy { it.displayName() }
-                            GroupOrder.BY_DELAY -> raw.sortedBy { if (it.status == 1) it.ping else Int.MAX_VALUE }
+                        when {
+                            BuiltinPool.isPool(groupId) || group?.order == GroupOrder.BY_DELAY ->
+                                raw.sortedWith(pingComparator({ it.status }, { it.ping }, { it.userOrder }, { it.id }))
+                            group?.order == GroupOrder.BY_NAME -> raw.sortedBy { it.displayName() }
                             else -> raw
                         }
                     }
@@ -300,13 +312,9 @@ fun ConfigurationScreen(
                                 }) { Text("Открыть общий список") }
                             }
                         }
-                        progress?.let { current ->
-                            item(key = "__probe_progress__") {
-                                Text(
-                                    text = "Проверка: ${current.completed}/${current.total}" +
-                                        if (current.groupId != selectedGroupId) " (другая группа)" else "",
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                )
+                        if (progress != null || outcome != null) {
+                            item(key = "__probe_status__") {
+                                io.nekohasekai.sagernet.ui.compose.components.ProbeStatusCard(progress, outcome, selectedGroupId)
                             }
                         }
                         if (profiles.isEmpty()) {

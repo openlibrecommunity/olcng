@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit
 data class PoolRefreshState(
     val isRefreshing: Boolean = false,
     val completedSources: Int = 0,
-    val totalSources: Int = 18,
+    val totalSources: Int = BuiltinPoolSources.urls.size,
     val lastError: String? = null,
 )
 
@@ -59,12 +59,30 @@ object BuiltinPool {
     }
 
     suspend fun initialize(): Long = withContext(Dispatchers.IO) {
+        val dao = SagerDatabase.poolDao
+        val group = dao.registry()?.let { SagerDatabase.groupDao.getById(it.groupId) }
+        if (group != null && dao.membershipCount() > 0) {
+            schedulePeriodicRefresh()
+            return@withContext group.id
+        }
         withPoolLock { initializeLocked() }
     }
 
     private suspend fun initializeLocked(): Long {
         val db = SagerDatabase.database
         val existing = db.poolDao().sources().associateBy { it.id }
+        val registry = db.poolDao().registry()
+        val currentGroup = registry?.let { db.groupDao().getById(it.groupId) }
+        if (currentGroup != null && BuiltinPoolSources.urls.all { (id, url) ->
+                existing[id]?.let { it.url == url && !it.content.isNullOrBlank() } == true
+            } && db.poolDao().membershipCount() > 0) {
+            if (currentGroup.order != GroupOrder.BY_DELAY) {
+                currentGroup.order = GroupOrder.BY_DELAY
+                db.groupDao().updateGroup(currentGroup)
+            }
+            schedulePeriodicRefresh()
+            return currentGroup.id
+        }
         val seeds = if (BuiltinPoolSources.urls.keys.any { existing[it]?.content == null }) {
             loadSeeds()
         } else emptyMap()
@@ -72,6 +90,7 @@ object BuiltinPool {
             val old = existing[id]?.takeIf { it.url == url } ?: PoolSource(id, url)
             if (old.content == null) seeds[id]?.let { old.copy(content = it) } ?: old else old
         }
+        val snapshots = sources.associate { it.id to parseSnapshot(it.content) }
         val groupId = db.withTransaction {
             val registry = db.poolDao().registry()
             val group = registry?.let { db.groupDao().getById(it.groupId) }
@@ -92,16 +111,10 @@ object BuiltinPool {
             }
             db.poolDao().putRegistry(PoolRegistry(groupId = id, lastAttempt = registry?.lastAttempt ?: 0L))
             db.poolDao().putSources(sources)
-            merge(id, sources.associate { it.id to parseSnapshot(it.content) })
+            merge(id, snapshots)
             id
         }
-        RemoteWorkManager.getInstance(app).enqueueUniquePeriodicWork(
-            "$WORK_NAME-periodic", ExistingPeriodicWorkPolicy.KEEP,
-            PeriodicWorkRequest.Builder(BuiltinPoolWorker::class.java, 30, TimeUnit.MINUTES)
-                .setInitialDelay(30, TimeUnit.MINUTES)
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
-                .build(),
-        )
+        schedulePeriodicRefresh()
         mutableState.update { state ->
             if (state.isRefreshing) state else state.copy(
                 completedSources = sources.count { it.lastSuccess > 0 },
@@ -109,6 +122,16 @@ object BuiltinPool {
             )
         }
         return groupId
+    }
+
+    private fun schedulePeriodicRefresh() {
+        RemoteWorkManager.getInstance(app).enqueueUniquePeriodicWork(
+            "$WORK_NAME-periodic", ExistingPeriodicWorkPolicy.KEEP,
+            PeriodicWorkRequest.Builder(BuiltinPoolWorker::class.java, 30, TimeUnit.MINUTES)
+                .setInitialDelay(30, TimeUnit.MINUTES)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+                .build(),
+        )
     }
 
     fun isPool(groupId: Long): Boolean = groupId > 0 &&
@@ -147,7 +170,9 @@ object BuiltinPool {
                     BuiltinPoolSources.urls.keys.map { id -> async {
                         semaphore.withPermit {
                             try {
-                                fetch(requireNotNull(sources[id]))
+                                fetch(requireNotNull(sources[id])).also { (source, _) ->
+                                    db.poolDao().putSources(listOf(source))
+                                }
                             } finally {
                                 mutableState.update { it.copy(completedSources = it.completedSources + 1) }
                             }
@@ -180,7 +205,7 @@ object BuiltinPool {
                     val item = entry.asJsonObject
                     val id = item["id"].asString
                     val content = item["content"].asString
-                    if (BuiltinPoolSources.urls[id] == item["url"].asString && parseSnapshot(content).isNotEmpty()) {
+                    if (BuiltinPoolSources.urls[id] == item["url"].asString && content.isNotBlank()) {
                         id to content
                     } else null
                 }.getOrNull()
