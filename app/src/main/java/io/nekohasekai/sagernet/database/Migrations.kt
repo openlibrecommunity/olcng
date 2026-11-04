@@ -1,0 +1,228 @@
+/******************************************************************************
+ *                                                                            *
+ * Copyright (C) 2021 by nekohasekai <contact-sagernet@sekai.icu>             *
+ *                                                                            *
+ * This program is free software: you can redistribute it and/or modify       *
+ * it under the terms of the GNU General Public License as published by       *
+ * the Free Software Foundation, either version 3 of the License, or          *
+ *  (at your option) any later version.                                       *
+ *                                                                            *
+ * This program is distributed in the hope that it will be useful,            *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+ * GNU General Public License for more details.                               *
+ *                                                                            *
+ * You should have received a copy of the GNU General Public License          *
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.       *
+ *                                                                            *
+ ******************************************************************************/
+
+@file:Suppress("ClassName")
+
+package io.nekohasekai.sagernet.database
+
+import androidx.room.DeleteColumn
+import androidx.room.DeleteTable
+import androidx.room.migration.AutoMigrationSpec
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import io.nekohasekai.sagernet.fmt.KryoConverters
+
+object SagerDatabase_Migration_1_2 : Migration(1, 2) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""ALTER TABLE `rules` ADD `packages` TEXT NOT NULL DEFAULT ''""")
+    }
+}
+
+object SagerDatabase_Migration_2_3 : Migration(2, 3) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""ALTER TABLE `proxy_entities` ADD `hysteriaBean` BLOB DEFAULT NULL""")
+    }
+}
+
+object SagerDatabase_Migration_3_4 : Migration(3, 4) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""ALTER TABLE `proxy_entities` ADD `snellBean` BLOB DEFAULT NULL""")
+    }
+}
+
+object SagerDatabase_Migration_4_5 : Migration(4, 5) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""ALTER TABLE `proxy_groups` ADD `order` INTEGER NOT NULL DEFAULT 0""")
+    }
+}
+
+object SagerDatabase_Migration_5_6 : Migration(5, 6) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""CREATE TABLE IF NOT EXISTS `stats` (`packageName` TEXT NOT NULL, `tcpConnections` INTEGER NOT NULL, `udpConnections` INTEGER NOT NULL, `uplink` INTEGER NOT NULL, `downlink` INTEGER NOT NULL, PRIMARY KEY(`packageName`))""")
+    }
+}
+
+object SagerDatabase_Migration_6_7 : Migration(6, 7) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""CREATE TABLE IF NOT EXISTS `stats_MERGE_TABLE` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `packageName` TEXT NOT NULL, `tcpConnections` INTEGER NOT NULL, `udpConnections` INTEGER NOT NULL, `uplink` INTEGER NOT NULL, `downlink` INTEGER NOT NULL)""")
+        database.execSQL("""INSERT INTO `stats_MERGE_TABLE` (`packageName`,`tcpConnections`,`udpConnections`,`uplink`,`downlink`,`id`) SELECT `stats`.`packageName`,`stats`.`tcpConnections`,`stats`.`udpConnections`,`stats`.`uplink`,`stats`.`downlink`,0 FROM `stats`""")
+        database.execSQL("""DROP TABLE IF EXISTS `stats`""")
+        database.execSQL("""ALTER TABLE `stats_MERGE_TABLE` RENAME TO `stats`""")
+        database.execSQL("""CREATE UNIQUE INDEX IF NOT EXISTS `index_stats_packageName` ON `stats` (`packageName`)""")
+        database.execSQL("""CREATE UNIQUE INDEX IF NOT EXISTS `index_stats_packageName` ON `stats` (`packageName`)""")
+    }
+}
+
+object SagerDatabase_Migration_7_8 : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""ALTER TABLE `rules` ADD `appStatus` TEXT NOT NULL DEFAULT ''""")
+    }
+}
+
+object SagerDatabase_Migration_8_9 : Migration(8, 9) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""ALTER TABLE `proxy_entities` ADD `sshBean` BLOB DEFAULT NULL""")
+    }
+}
+
+object SagerDatabase_Migration_9_10 : Migration(9, 10) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""ALTER TABLE `proxy_entities` ADD `wgBean` BLOB DEFAULT NULL""")
+    }
+}
+
+object SagerDatabase_Migration_10_11 : Migration(10, 11) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("""CREATE TABLE IF NOT EXISTS `proxy_entities_MERGE_TABLE` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `groupId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `userOrder` INTEGER NOT NULL, `tx` INTEGER NOT NULL, `rx` INTEGER NOT NULL, `status` INTEGER NOT NULL, `ping` INTEGER NOT NULL, `uuid` TEXT NOT NULL, `error` TEXT, `socksBean` BLOB, `httpBean` BLOB, `ssBean` BLOB, `ssrBean` BLOB, `vmessBean` BLOB, `vlessBean` BLOB, `trojanBean` BLOB, `trojanGoBean` BLOB, `naiveBean` BLOB, `ptBean` BLOB, `rbBean` BLOB, `brookBean` BLOB, `hysteriaBean` BLOB, `sshBean` BLOB, `wgBean` BLOB, `configBean` BLOB, `chainBean` BLOB, `balancerBean` BLOB)""")
+        database.execSQL(
+            """INSERT INTO `proxy_entities_MERGE_TABLE` (`id`,`groupId`,`type`,`userOrder`,`tx`,`rx`,`status`,`ping`,`uuid`,`error`,`socksBean`,`httpBean`,`ssBean`,`ssrBean`,`vmessBean`,`vlessBean`,`trojanBean`,`trojanGoBean`,`naiveBean`,`ptBean`,`rbBean`,`brookBean`,`hysteriaBean`,`sshBean`,`wgBean`,`configBean`,`chainBean`,`balancerBean`) SELECT `proxy_entities`.`id`,`proxy_entities`.`groupId`,`proxy_entities`.`type`,`proxy_entities`.`userOrder`,`proxy_entities`.`tx`,`proxy_entities`.`rx`,`proxy_entities`.`status`,`proxy_entities`.`ping`,`proxy_entities`.`uuid`,`proxy_entities`.`error`,`proxy_entities`.`socksBean`,`proxy_entities`.`httpBean`,`proxy_entities`.`ssBean`,`proxy_entities`.`ssrBean`,`proxy_entities`.`vmessBean`,`proxy_entities`.`vlessBean`,`proxy_entities`.`trojanBean`,`proxy_entities`.`trojanGoBean`,`proxy_entities`.`naiveBean`,`proxy_entities`.`ptBean`,`proxy_entities`.`rbBean`,`proxy_entities`.`brookBean`,`proxy_entities`.`hysteriaBean`,`proxy_entities`.`sshBean`,`proxy_entities`.`wgBean`,`proxy_entities`.`configBean`,`proxy_entities`.`chainBean`,`proxy_entities`.`balancerBean` FROM `proxy_entities`"""
+        )
+        database.execSQL("""DROP TABLE IF EXISTS `proxy_entities`""")
+        database.execSQL("""ALTER TABLE `proxy_entities_MERGE_TABLE` RENAME TO `proxy_entities`""")
+        database.execSQL("""CREATE INDEX IF NOT EXISTS `groupId` ON `proxy_entities` (`groupId`)""")
+    }
+}
+
+object SagerDatabase_Migration_11_12 : Migration(11, 12) {
+    override fun migrate(database: SupportSQLiteDatabase): Unit {
+        database.execSQL("""CREATE TABLE IF NOT EXISTS `rules_MERGE_TABLE` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `userOrder` INTEGER NOT NULL, `enabled` INTEGER NOT NULL, `domains` TEXT NOT NULL, `ip` TEXT NOT NULL, `port` TEXT NOT NULL, `sourcePort` TEXT NOT NULL, `network` TEXT NOT NULL, `source` TEXT NOT NULL, `protocol` TEXT NOT NULL, `attrs` TEXT NOT NULL, `outbound` INTEGER NOT NULL, `reverse` INTEGER NOT NULL, `redirect` TEXT NOT NULL, `packages` TEXT NOT NULL)""")
+        database.execSQL("""INSERT INTO `rules_MERGE_TABLE` (`id`,`name`,`userOrder`,`enabled`,`domains`,`ip`,`port`,`sourcePort`,`network`,`source`,`protocol`,`attrs`,`outbound`,`reverse`,`redirect`,`packages`) SELECT `rules`.`id`,`rules`.`name`,`rules`.`userOrder`,`rules`.`enabled`,`rules`.`domains`,`rules`.`ip`,`rules`.`port`,`rules`.`sourcePort`,`rules`.`network`,`rules`.`source`,`rules`.`protocol`,`rules`.`attrs`,`rules`.`outbound`,`rules`.`reverse`,`rules`.`redirect`,`rules`.`packages` FROM `rules`""")
+        database.execSQL("""DROP TABLE IF EXISTS `rules`""")
+        database.execSQL("""ALTER TABLE `rules_MERGE_TABLE` RENAME TO `rules`""")
+    }
+}
+
+@DeleteTable(
+    tableName = "KeyValuePair"
+)
+class SagerDatabase_Migration_14_15 : AutoMigrationSpec
+
+@DeleteColumn.Entries(
+    DeleteColumn(
+        tableName = "proxy_entities",
+        columnName = "ptBean"
+    ),
+    DeleteColumn(
+        tableName = "proxy_entities",
+        columnName = "rbBean"
+    ),
+    DeleteColumn(
+        tableName = "proxy_entities",
+        columnName = "mieru2Bean"
+    )
+)
+class SagerDatabase_Migration_22_23 : AutoMigrationSpec
+
+@DeleteColumn.Entries(
+    DeleteColumn(
+        tableName = "proxy_entities",
+        columnName = "trojanGoBean"
+    ),
+    DeleteColumn(
+        tableName = "proxy_entities",
+        columnName = "brookBean"
+    ),
+    DeleteColumn(
+        tableName = "proxy_entities",
+        columnName = "hysteriaBean"
+    ),
+    DeleteColumn(
+        tableName = "proxy_entities",
+        columnName = "tuicBean"
+    )
+)
+class SagerDatabase_Migration_31_32 : AutoMigrationSpec
+
+@DeleteTable.Entries(
+    DeleteTable(
+        tableName = "stats"
+    )
+)
+class SagerDatabase_Migration_33_34 : AutoMigrationSpec
+
+@DeleteColumn.Entries(
+    DeleteColumn(
+        tableName = "proxy_entities",
+        columnName = "shadowtlsBean"
+    ),
+    DeleteColumn(
+        tableName = "rules",
+        columnName = "reverse"
+    ),
+    DeleteColumn(
+        tableName = "rules",
+        columnName = "redirect"
+    ),
+)
+class SagerDatabase_Migration_35_36 : AutoMigrationSpec
+
+object SagerDatabase_Migration_40_41 : Migration(40, 41) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        val removedIds = mutableSetOf<Long>()
+        database.query("SELECT `id` FROM `proxy_entities` WHERE `type` = 31").use { cursor ->
+            while (cursor.moveToNext()) removedIds.add(cursor.getLong(0))
+        }
+        val lastId = database.query("SELECT `seq` FROM `sqlite_sequence` WHERE `name` = 'proxy_entities'").use { cursor ->
+            if (cursor.moveToFirst()) cursor.getLong(0) else 0L
+        }
+        // remove dependent chains rather than silently routing without a required hop
+        var changed: Boolean
+        do {
+            changed = false
+            if (removedIds.isEmpty()) break
+            database.query("SELECT `id`, `chainBean`, `balancerBean` FROM `proxy_entities` WHERE `type` IN (8, 14)").use { cursor ->
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(0)
+                    if (id in removedIds) continue
+                    val proxies = if (!cursor.isNull(1)) {
+                        KryoConverters.chainDeserialize(cursor.getBlob(1))?.proxies
+                    } else if (!cursor.isNull(2)) {
+                        KryoConverters.balancerBeanDeserialize(cursor.getBlob(2))?.proxies
+                    } else null
+                    if (proxies?.any { it in removedIds } == true) {
+                        removedIds.add(id)
+                        changed = true
+                    }
+                }
+            }
+        } while (changed)
+        for (id in removedIds) {
+            database.execSQL("UPDATE `proxy_groups` SET `frontProxy` = -1 WHERE `frontProxy` = ?", arrayOf(id))
+            database.execSQL("UPDATE `proxy_groups` SET `landingProxy` = -1 WHERE `landingProxy` = ?", arrayOf(id))
+            database.execSQL("UPDATE `rules` SET `enabled` = 0, `outbound` = 0 WHERE `outbound` = ?", arrayOf(id))
+            database.execSQL("DELETE FROM `proxy_entities` WHERE `id` = ?", arrayOf(id))
+        }
+        database.execSQL("""CREATE TABLE IF NOT EXISTS `proxy_entities_new` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `groupId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `userOrder` INTEGER NOT NULL, `tx` INTEGER NOT NULL, `rx` INTEGER NOT NULL, `status` INTEGER NOT NULL, `ping` INTEGER NOT NULL, `connectedTime` INTEGER NOT NULL DEFAULT 0, `uuid` TEXT NOT NULL, `error` TEXT, `socksBean` BLOB, `httpBean` BLOB, `ssBean` BLOB, `ssrBean` BLOB, `vmessBean` BLOB, `vlessBean` BLOB, `trojanBean` BLOB, `naiveBean` BLOB, `hysteria2Bean` BLOB, `mieruBean` BLOB, `tuic5Bean` BLOB, `sshBean` BLOB, `wgBean` BLOB, `juicityBean` BLOB, `http3Bean` BLOB, `anytlsBean` BLOB, `shadowquicBean` BLOB, `trustTunnelBean` BLOB, `snellBean` BLOB, `masqueBean` BLOB, `configBean` BLOB, `chainBean` BLOB, `balancerBean` BLOB, `iconIndex` INTEGER NOT NULL DEFAULT -1)""")
+        database.execSQL("""INSERT INTO `proxy_entities_new` (`id`,`groupId`,`type`,`userOrder`,`tx`,`rx`,`status`,`ping`,`connectedTime`,`uuid`,`error`,`socksBean`,`httpBean`,`ssBean`,`ssrBean`,`vmessBean`,`vlessBean`,`trojanBean`,`naiveBean`,`hysteria2Bean`,`mieruBean`,`tuic5Bean`,`sshBean`,`wgBean`,`juicityBean`,`http3Bean`,`anytlsBean`,`shadowquicBean`,`trustTunnelBean`,`snellBean`,`configBean`,`chainBean`,`balancerBean`,`iconIndex`) SELECT `id`,`groupId`,`type`,`userOrder`,`tx`,`rx`,`status`,`ping`,`connectedTime`,`uuid`,`error`,`socksBean`,`httpBean`,`ssBean`,`ssrBean`,`vmessBean`,`vlessBean`,`trojanBean`,`naiveBean`,`hysteria2Bean`,`mieruBean`,`tuic5Bean`,`sshBean`,`wgBean`,`juicityBean`,`http3Bean`,`anytlsBean`,`shadowquicBean`,`trustTunnelBean`,`snellBean`,`configBean`,`chainBean`,`balancerBean`,`iconIndex` FROM `proxy_entities` WHERE `type` != 31""")
+        database.execSQL("""DROP TABLE `proxy_entities`""")
+        database.execSQL("""ALTER TABLE `proxy_entities_new` RENAME TO `proxy_entities`""")
+        database.execSQL("UPDATE `sqlite_sequence` SET `seq` = ? WHERE `name` = 'proxy_entities'", arrayOf(lastId))
+        database.execSQL("INSERT INTO `sqlite_sequence` (`name`, `seq`) SELECT 'proxy_entities', ? WHERE NOT EXISTS (SELECT 1 FROM `sqlite_sequence` WHERE `name` = 'proxy_entities')", arrayOf(lastId))
+        database.execSQL("""CREATE INDEX IF NOT EXISTS `groupId` ON `proxy_entities` (`groupId`)""")
+    }
+}
+
+
+object SagerDatabase_Migration_41_42 : Migration(41, 42) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("""CREATE TABLE IF NOT EXISTS `pool_registry` (`id` TEXT NOT NULL, `groupId` INTEGER NOT NULL, `lastAttempt` INTEGER NOT NULL, PRIMARY KEY(`id`))""")
+        database.execSQL("""CREATE TABLE IF NOT EXISTS `pool_sources` (`id` TEXT NOT NULL, `url` TEXT NOT NULL, `content` TEXT, `etag` TEXT, `lastModified` TEXT, `lastSuccess` INTEGER NOT NULL, `lastError` TEXT, PRIMARY KEY(`id`))""")
+        database.execSQL("""CREATE TABLE IF NOT EXISTS `pool_memberships` (`sourceId` TEXT NOT NULL, `fingerprint` TEXT NOT NULL, `profileId` INTEGER NOT NULL, PRIMARY KEY(`sourceId`, `fingerprint`))""")
+    }
+}

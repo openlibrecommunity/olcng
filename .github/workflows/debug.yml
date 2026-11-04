@@ -1,0 +1,79 @@
+name: Migration Build
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'app/**'
+      - 'buildSrc/**'
+      - 'library/**'
+      - 'gradle/**'
+      - 'version.properties'
+      - '.github/workflows/debug.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: migration-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: 1.27.3
+          cache-dependency-path: library/core/go.sum
+      - name: Setup Go Mobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20261011034528-197770444867
+          go install golang.org/x/mobile/cmd/gobind@v0.0.0-20261011034528-197770444867
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-37.2 build-tools;37.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: r29
+      - name: Native Build
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+          GOFLAGS: -p=2
+          GOMAXPROCS: 2
+        run: |
+          (cd library/core && go test ./owenbatch)
+          ./run lib core
+          ./bin/lib/naive/download.sh
+      - name: Signed migration candidates
+        env:
+          APP_KEYSTORE_BASE64: ${{ secrets.APP_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.APP_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.APP_KEYSTORE_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.APP_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$APP_KEYSTORE_BASE64"
+          export KEYSTORE_PATH="$GITHUB_WORKSPACE/oweng.jks"
+          trap 'rm -f "$KEYSTORE_PATH"' EXIT
+          printf '%s' "$APP_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
+          chmod 600 "$KEYSTORE_PATH"
+          printf 'sdk.dir=%s\n' "$ANDROID_HOME" > local.properties
+          ./gradlew :app:downloadAssets
+          ./gradlew :app:testOssReleaseUnitTest :app:testFdroidReleaseUnitTest :app:assembleOssRelease :app:assembleFdroidRelease
+      - uses: actions/upload-artifact@v7
+        with:
+          name: oweng-migration-apks
+          path: |
+            app/build/outputs/apk/oss/release/*.apk
+            app/build/outputs/apk/fdroid/release/*.apk
+      - uses: actions/upload-artifact@v7
+        with:
+          name: LibOwengCore
+          path: app/libs/libexclavecore.aar

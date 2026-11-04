@@ -1,0 +1,184 @@
+name: Release Build
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+      - "[0-9]*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build and publish'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+      - name: Check tag matches version.properties
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^VERSION_NAME=//p' version.properties | tr -d '[:space:]')"
+          # Accept both tagging styles already in use: v0.17.57 and 0.17.47-beta.2
+          tagged="${TAG#v}"
+          if [ "$tagged" != "$version" ]; then
+              printf 'tag %s does not match VERSION_NAME=%s in version.properties\n' "$TAG" "$version" >&2
+              printf 'bump VERSION_NAME (and VERSION_CODE) and tag that commit as v%s\n' "$version" >&2
+              exit 1
+          fi
+          printf 'building %s\n' "$TAG"
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: 1.27.3
+          cache-dependency-path: "library/core/go.sum"
+      - name: Setup Go Mobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20261011034528-197770444867
+          go install golang.org/x/mobile/cmd/gobind@v0.0.0-20261011034528-197770444867
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: 25
+          cache: 'gradle'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-37.2 build-tools;37.0.0'
+          log-accepted-android-sdk-licenses: false
+      - name: Setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r29
+      - name: Native Build
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          GOFLAGS: -p=2
+          GOMAXPROCS: 2
+        run: |
+          ./run lib core
+          ./bin/lib/naive/download.sh
+          for abi in arm64-v8a armeabi-v7a x86_64 x86; do
+            test -s "app/src/main/jniLibs/$abi/libnaive.so"
+          done
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          path: app/libs/libexclavecore.aar
+          name: "LibOwengCore"
+      - name: Decode Keystore
+        if: env.KEYSTORE_BASE64 != ''
+        env:
+          KEYSTORE_BASE64: ${{ secrets.APP_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > oweng.jks
+      - name: Gradle Cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.gradle
+          key: gradle-${{ hashFiles('**/*.gradle.kts') }}
+      - name: Gradle Build
+        env:
+          KEYSTORE_PATH: ${{ secrets.APP_KEYSTORE_BASE64 != '' && '../oweng.jks' || '' }}
+          KEYSTORE_PASSWORD: ${{ secrets.APP_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.APP_KEYSTORE_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.APP_KEY_PASSWORD }}
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
+          ./gradlew :app:downloadAssets
+          ./gradlew :app:testOssReleaseUnitTest :app:testFdroidReleaseUnitTest :app:assembleOssRelease :app:assembleFdroidRelease
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: APKs
+          path: app/build/outputs/apk/oss/release
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: APKs-fdroid
+          path: app/build/outputs/apk/fdroid/release
+  publish:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Download Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: APKs
+          path: artifacts/oss
+      - name: Download Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: APKs-fdroid
+          path: artifacts/fdroid
+      - name: Build release notes
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          previous="$(git tag --list 'v[0-9]*' '[0-9]*' --sort=-creatordate | grep -Fxv "$TAG" | head -n1 || true)"
+          repo="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+          if [ -n "$previous" ]; then
+              link="${repo}/compare/${previous}...${TAG}"
+          else
+              link="${repo}/commits/${TAG}"
+          fi
+          version="$(sed -n 's/^VERSION_NAME=//p' version.properties | tr -d '[:space:]')"
+          if [ -f "docs/releases/$version.md" ]; then
+              cat "docs/releases/$version.md" > release-notes.md
+              printf '\n' >> release-notes.md
+          else
+              : > release-notes.md
+          fi
+          printf '**Full Changelog**: %s\n' "$link" >> release-notes.md
+          cat release-notes.md
+      - name: Publish Release
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir apks
+          find artifacts -name "*.apk" -exec cp {} apks \;
+          ls -la apks
+
+          # A tag carrying a suffix such as v1.2.3-beta.1 is a pre-release.
+          prerelease=""
+          case "$TAG" in
+              *-*) prerelease="--prerelease" ;;
+          esac
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+              gh release edit "$TAG" --title "oweng $TAG" --notes-file release-notes.md
+              gh release upload "$TAG" ./apks/* --clobber
+          else
+              gh release create "$TAG" ./apks/* \
+                  --title "oweng $TAG" \
+                  --notes-file release-notes.md \
+                  $prerelease
+          fi

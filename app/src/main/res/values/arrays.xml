@@ -1,0 +1,984 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="bypass_private_route">
+        <!-->
+            This is the complement of
+            https://github.com/v2fly/geoip/blob/7cba21fc3b1e63eb847f1e0f353d0e7ec37f7016/plugin/special/private.go#L16-L31
+        </-->
+        <item>1.0.0.0/8</item>
+        <item>2.0.0.0/7</item>
+        <item>4.0.0.0/6</item>
+        <item>8.0.0.0/7</item>
+        <item>11.0.0.0/8</item>
+        <item>12.0.0.0/6</item>
+        <item>16.0.0.0/4</item>
+        <item>32.0.0.0/3</item>
+        <item>64.0.0.0/3</item>
+        <item>96.0.0.0/6</item>
+        <item>100.0.0.0/10</item>
+        <item>100.128.0.0/9</item>
+        <item>101.0.0.0/8</item>
+        <item>102.0.0.0/7</item>
+        <item>104.0.0.0/5</item>
+        <item>112.0.0.0/5</item>
+        <item>120.0.0.0/6</item>
+        <item>124.0.0.0/7</item>
+        <item>126.0.0.0/8</item>
+        <item>128.0.0.0/3</item>
+        <item>160.0.0.0/5</item>
+        <item>168.0.0.0/8</item>
+        <item>169.0.0.0/9</item>
+        <item>169.128.0.0/10</item>
+        <item>169.192.0.0/11</item>
+        <item>169.224.0.0/12</item>
+        <item>169.240.0.0/13</item>
+        <item>169.248.0.0/14</item>
+        <item>169.252.0.0/15</item>
+        <item>169.255.0.0/16</item>
+        <item>170.0.0.0/7</item>
+        <item>172.0.0.0/12</item>
+        <item>172.32.0.0/11</item>
+        <item>172.64.0.0/10</item>
+        <item>172.128.0.0/9</item>
+        <item>173.0.0.0/8</item>
+        <item>174.0.0.0/7</item>
+        <item>176.0.0.0/4</item>
+        <item>192.0.1.0/24</item>
+        <item>192.0.3.0/24</item>
+        <item>192.0.4.0/22</item>
+        <item>192.0.8.0/21</item>
+        <item>192.0.16.0/20</item>
+        <item>192.0.32.0/19</item>
+        <item>192.0.64.0/18</item>
+        <item>192.0.128.0/17</item>
+        <item>192.1.0.0/16</item>
+        <item>192.2.0.0/15</item>
+        <item>192.4.0.0/14</item>
+        <item>192.8.0.0/13</item>
+        <item>192.16.0.0/12</item>
+        <item>192.32.0.0/11</item>
+        <item>192.64.0.0/12</item>
+        <item>192.80.0.0/13</item>
+        <item>192.88.0.0/18</item>
+        <item>192.88.64.0/19</item>
+        <item>192.88.96.0/23</item>
+        <item>192.88.98.0/24</item>
+        <item>192.88.100.0/22</item>
+        <item>192.88.104.0/21</item>
+        <item>192.88.112.0/20</item>
+        <item>192.88.128.0/17</item>
+        <item>192.89.0.0/16</item>
+        <item>192.90.0.0/15</item>
+        <item>192.92.0.0/14</item>
+        <item>192.96.0.0/11</item>
+        <item>192.128.0.0/11</item>
+        <item>192.160.0.0/13</item>
+        <item>192.169.0.0/16</item>
+        <item>192.170.0.0/15</item>
+        <item>192.172.0.0/14</item>
+        <item>192.176.0.0/12</item>
+        <item>192.192.0.0/10</item>
+        <item>193.0.0.0/8</item>
+        <item>194.0.0.0/7</item>
+        <item>196.0.0.0/7</item>
+        <item>198.0.0.0/12</item>
+        <item>198.16.0.0/15</item>
+        <item>198.20.0.0/14</item>
+        <item>198.24.0.0/13</item>
+        <item>198.32.0.0/12</item>
+        <item>198.48.0.0/15</item>
+        <item>198.50.0.0/16</item>
+        <item>198.51.0.0/18</item>
+        <item>198.51.64.0/19</item>
+        <item>198.51.96.0/22</item>
+        <item>198.51.101.0/24</item>
+        <item>198.51.102.0/23</item>
+        <item>198.51.104.0/21</item>
+        <item>198.51.112.0/20</item>
+        <item>198.51.128.0/17</item>
+        <item>198.52.0.0/14</item>
+        <item>198.56.0.0/13</item>
+        <item>198.64.0.0/10</item>
+        <item>198.128.0.0/9</item>
+        <item>199.0.0.0/8</item>
+        <item>200.0.0.0/7</item>
+        <item>202.0.0.0/8</item>
+        <item>203.0.0.0/18</item>
+        <item>203.0.64.0/19</item>
+        <item>203.0.96.0/20</item>
+        <item>203.0.112.0/24</item>
+        <item>203.0.114.0/23</item>
+        <item>203.0.116.0/22</item>
+        <item>203.0.120.0/21</item>
+        <item>203.0.128.0/17</item>
+        <item>203.1.0.0/16</item>
+        <item>203.2.0.0/15</item>
+        <item>203.4.0.0/14</item>
+        <item>203.8.0.0/13</item>
+        <item>203.16.0.0/12</item>
+        <item>203.32.0.0/11</item>
+        <item>203.64.0.0/10</item>
+        <item>203.128.0.0/9</item>
+        <item>204.0.0.0/6</item>
+        <item>208.0.0.0/4</item>
+    </string-array>
+
+    <string-array name="enc_method_value">
+        <item>none</item>
+        <item>aes-128-gcm</item>
+        <item>aes-192-gcm</item>
+        <item>aes-256-gcm</item>
+        <item>chacha20-ietf-poly1305</item>
+        <item>xchacha20-ietf-poly1305</item>
+        <item>2022-blake3-aes-128-gcm</item>
+        <item>2022-blake3-aes-256-gcm</item>
+        <item>2022-blake3-chacha20-poly1305</item>
+        <item>rc4-md5</item>
+        <item>aes-128-ctr</item>
+        <item>aes-192-ctr</item>
+        <item>aes-256-ctr</item>
+        <item>aes-128-cfb</item>
+        <item>aes-192-cfb</item>
+        <item>aes-256-cfb</item>
+        <item>bf-cfb</item>
+        <item>camellia-128-cfb</item>
+        <item>camellia-192-cfb</item>
+        <item>camellia-256-cfb</item>
+        <item>salsa20</item>
+        <item>chacha20</item>
+        <item>chacha20-ietf</item>
+        <item>xchacha20</item>
+        <item>table</item>
+    </string-array>
+
+    <string-array name="ssr_enc_method_value">
+        <item>none</item>
+        <item>rc4-md5</item>
+        <item>aes-128-ctr</item>
+        <item>aes-192-ctr</item>
+        <item>aes-256-ctr</item>
+        <item>aes-128-cfb</item>
+        <item>aes-192-cfb</item>
+        <item>aes-256-cfb</item>
+        <item>bf-cfb</item>
+        <item>camellia-128-cfb</item>
+        <item>camellia-192-cfb</item>
+        <item>camellia-256-cfb</item>
+        <item>salsa20</item>
+        <item>chacha20</item>
+        <item>chacha20-ietf</item>
+        <item>xchacha20</item>
+        <item>table</item>
+    </string-array>
+
+    <string-array name="service_modes">
+        <item>@string/service_mode_vpn</item>
+        <item>@string/service_mode_proxy</item>
+        <!--
+                <item>@string/service_mode_transproxy</item>
+        -->
+    </string-array>
+    <string-array name="service_mode_values">
+        <item>vpn</item>
+        <item>proxy</item>
+        <!--
+                <item>transproxy</item>
+        -->
+    </string-array>
+
+    <string-array name="route_protocol_entry">
+        <item />
+        <item>TCP</item>
+        <item>UDP</item>
+        <item>TCP,UDP</item>
+    </string-array>
+    <string-array name="route_protocol_value">
+        <item />
+        <item>tcp</item>
+        <item>udp</item>
+        <item>tcp,udp</item>
+    </string-array>
+    <string-array name="outbound_entry">
+        <item>@string/route_proxy</item>
+        <item>@string/route_bypass</item>
+        <item>@string/route_block</item>
+        <item>@string/route_profile</item>
+    </string-array>
+    <string-array name="outbound_value">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="protocol_value">
+        <item>origin</item>
+        <item>auth_sha1_v4</item>
+        <item>auth_aes128_sha1</item>
+        <item>auth_aes128_md5</item>
+        <item>auth_chain_a</item>
+        <item>auth_chain_b</item>
+    </string-array>
+
+    <string-array name="obfs_value">
+        <item>plain</item>
+        <item>http_simple</item>
+        <item>http_post</item>
+        <item>tls1.2_ticket_auth</item>
+        <item>random_head</item>
+    </string-array>
+
+    <string-array name="networks_entry">
+        <item/>
+        <item>kcp</item>
+        <item>ws</item>
+        <item>http</item>
+        <item>quic</item>
+        <item>grpc</item>
+        <item>meek</item>
+        <item>httpupgrade</item>
+        <item>xhttp</item>
+        <item>hysteria2</item>
+        <item>mekya</item>
+    </string-array>
+
+    <string-array name="networks_value">
+        <item>tcp</item>
+        <item>kcp</item>
+        <item>ws</item>
+        <item>http</item>
+        <item>quic</item>
+        <item>grpc</item>
+        <item>meek</item>
+        <item>httpupgrade</item>
+        <item>splithttp</item>
+        <item>hysteria2</item>
+        <item>mekya</item>
+    </string-array>
+
+    <string-array name="tcp_headers_entry">
+        <item />
+        <item>http</item>
+    </string-array>
+
+    <string-array name="tcp_headers_value">
+        <item>none</item>
+        <item>http</item>
+    </string-array>
+
+    <string-array name="kcp_quic_headers_entry">
+        <item />
+        <item>srtp</item>
+        <item>utp</item>
+        <item>wechat-video</item>
+        <item>dtls</item>
+        <item>wireguard</item>
+    </string-array>
+
+    <string-array name="kcp_quic_headers_value">
+        <item>none</item>
+        <item>srtp</item>
+        <item>utp</item>
+        <item>wechat-video</item>
+        <item>dtls</item>
+        <item>wireguard</item>
+    </string-array>
+
+    <string-array name="quic_security_value">
+        <item>none</item>
+        <item>aes-128-gcm</item>
+        <item>chacha20-poly1305</item>
+    </string-array>
+
+    <string-array name="vmess_encryption_value">
+        <item>auto</item>
+        <item>aes-128-gcm</item>
+        <item>chacha20-poly1305</item>
+        <item>none</item>
+        <item>zero</item>
+    </string-array>
+
+    <string-array name="vless_encryption_value">
+        <item>none</item>
+    </string-array>
+
+    <string-array name="transport_layer_encryption_entry">
+        <item />
+        <item>tls</item>
+        <item>reality</item>
+    </string-array>
+
+    <string-array name="transport_layer_encryption_value">
+        <item>none</item>
+        <item>tls</item>
+        <item>reality</item>
+    </string-array>
+
+    <string-array name="xtls_flow_value">
+        <item />
+        <item>xtls-rprx-vision</item>
+        <item>xtls-rprx-vision-udp443</item>
+    </string-array>
+
+    <string-array name="notification_entry">
+        <item>@string/disable</item>
+        <item>500ms</item>
+        <item>1s</item>
+        <item>3s</item>
+        <item>10s</item>
+    </string-array>
+
+    <string-array name="notification_value">
+        <item>0</item>
+        <item>500</item>
+        <item>1000</item>
+        <item>3000</item>
+        <item>10000</item>
+    </string-array>
+
+    <string-array name="domain_strategy">
+        <item>AsIs</item>
+        <item>IPIfNonMatch</item>
+        <item>IPOnDemand</item>
+    </string-array>
+
+    <string-array name="transproxy_mode">
+        <item>REDIRECT</item>
+        <item>TPROXY</item>
+    </string-array>
+
+    <string-array name="int_array_2">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+    <string-array name="naive_proto_entry">
+        <item>HTTPS</item>
+        <item>QUIC</item>
+    </string-array>
+
+    <string-array name="naive_proto_value">
+        <item>https</item>
+        <item>quic</item>
+    </string-array>
+
+    <string-array name="trusttunnel_protocol_entry">
+        <item>HTTP/2</item>
+        <item>HTTP/3</item>
+    </string-array>
+
+    <string-array name="config_type_entry">
+        <item>@string/custom_config</item>
+        <item>@string/custom_outbound</item>
+    </string-array>
+    <string-array name="config_type_value">
+        <item>v2ray</item>
+        <item>v2ray_outbound</item>
+    </string-array>
+
+    <string-array name="night_mode">
+        <item>@string/follow_system</item>
+        <item>@string/enable</item>
+        <item>@string/disable</item>
+        <item>@string/auto</item>
+    </string-array>
+    <string-array name="int_array_4">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="rules_dat_provider_entry">
+        <item>v2fly</item>
+        <item>Loyalsoldier/v2ray-rules-dat</item>
+        <item>runetfreedom/russia-v2ray-rules-dat</item>
+        <item>Chocolate4U/Iran-v2ray-rules</item>
+        <item>@string/route_rules_custom</item>
+    </string-array>
+
+    <string-array name="rules_dat_provider_value">
+        <item>0</item>
+        <item>1</item>
+        <item>4</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="balancer_type">
+        <item>@string/list</item>
+        <item>@string/menu_group</item>
+    </string-array>
+
+    <string-array name="balancer_strategy_entry">
+        <item>@string/random</item>
+        <item>leastPing</item>
+        <item>leastLoad</item>
+    </string-array>
+    <string-array name="balancer_strategy_value">
+        <item />
+        <item>leastPing</item>
+        <item>leastLoad</item>
+    </string-array>
+
+    <string-array name="int_array_3">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="group_types">
+        <item>@string/group_basic</item>
+        <item>@string/subscription</item>
+    </string-array>
+
+    <string-array name="subscription_types">
+        <item>@string/raw</item>
+        <item>SIP008</item>
+        <item>age</item>
+    </string-array>
+
+    <string-array name="subscription_types_value">
+        <item>0</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="socks_versions">
+        <item>SOCKS4</item>
+        <item>SOCKS4A</item>
+        <item>SOCKS5</item>
+    </string-array>
+
+    <string-array name="utls_entry">
+        <item>@string/disable</item>
+        <item>Chrome_Auto</item>
+        <item>Firefox_Auto</item>
+        <item>Safari_Auto</item>
+        <item>Randomized</item>
+        <item>RandomizedALPN</item>
+        <item>RandomizedNoALPN</item>
+        <item>IOS_Auto</item>
+        <item>Android_11_OkHttp</item>
+        <item>Edge_Auto</item>
+        <item>360_Auto</item>
+        <item>QQ_Auto</item>
+        <item>Golang</item>
+        <item>Firefox_55</item>
+        <item>Firefox_56</item>
+        <item>Firefox_63</item>
+        <item>Firefox_65</item>
+        <item>Firefox_99</item>
+        <item>Firefox_102</item>
+        <item>Firefox_105</item>
+        <item>Firefox_120</item>
+        <item>Firefox_148</item>
+        <item>Chrome_58</item>
+        <item>Chrome_62</item>
+        <item>Chrome_70</item>
+        <item>Chrome_72</item>
+        <item>Chrome_83</item>
+        <item>Chrome_87</item>
+        <item>Chrome_96</item>
+        <item>Chrome_100</item>
+        <item>Chrome_102</item>
+        <item>Chrome_106_Shuffle</item>
+        <item>Chrome_115_PQ</item>
+        <item>Chrome_120</item>
+        <item>Chrome_120_PQ</item>
+        <item>Chrome_131</item>
+        <item>Chrome_133</item>
+        <item>IOS_11_1</item>
+        <item>IOS_12_1</item>
+        <item>IOS_13</item>
+        <item>IOS_14</item>
+        <item>Edge_85</item>
+        <item>Edge_106</item>
+        <item>Safari_16_0</item>
+        <item>Safari_26_3</item>
+        <item>360_7_5</item>
+        <item>360_11_0</item>
+    </string-array>
+
+    <string-array name="utls_value">
+        <item />
+        <item>hellochrome_auto</item>
+        <item>hellofirefox_auto</item>
+        <item>hellosafari_auto</item>
+        <item>hellorandomized</item>
+        <item>hellorandomizedalpn</item>
+        <item>hellorandomizednoalpn</item>
+        <item>helloios_auto</item>
+        <item>helloandroid_11_okhttp</item>
+        <item>helloedge_auto</item>
+        <item>hello360_auto</item>
+        <item>helloqq_auto</item>
+        <item>hellogolang</item>
+        <item>hellofirefox_55</item>
+        <item>hellofirefox_56</item>
+        <item>hellofirefox_63</item>
+        <item>hellofirefox_65</item>
+        <item>hellofirefox_99</item>
+        <item>hellofirefox_102</item>
+        <item>hellofirefox_105</item>
+        <item>hellofirefox_120</item>
+        <item>hellofirefox_148</item>
+        <item>hellochrome_58</item>
+        <item>hellochrome_62</item>
+        <item>hellochrome_70</item>
+        <item>hellochrome_72</item>
+        <item>hellochrome_83</item>
+        <item>hellochrome_87</item>
+        <item>hellochrome_96</item>
+        <item>hellochrome_100</item>
+        <item>hellochrome_102</item>
+        <item>hellochrome_106_shuffle</item>
+        <item>hellochrome_115_pq</item>
+        <item>hellochrome_120</item>
+        <item>hellochrome_120_pq</item>
+        <item>hellochrome_131</item>
+        <item>hellochrome_133</item>
+        <item>helloios_11_1</item>
+        <item>helloios_12_1</item>
+        <item>helloios_13</item>
+        <item>helloios_14</item>
+        <item>helloedge_85</item>
+        <item>helloedge_106</item>
+        <item>hellosafari_16_0</item>
+        <item>hellosafari_26_3</item>
+        <item>hello360_7_5</item>
+        <item>hello360_11_0</item>
+    </string-array>
+
+    <string-array name="reality_fingerprint_entry">
+        <item>@string/disable</item>
+        <item>chrome</item>
+        <item>firefox</item>
+        <item>safari</item>
+        <item>ios</item>
+        <item>edge</item>
+        <item>qq</item>
+        <item>random</item>
+        <item>randomized</item>
+        <item>randomizednoalpn</item>
+        <item>hellofirefox_120</item>
+        <item>hellofirefox_148</item>
+        <item>hellochrome_120</item>
+        <item>hellochrome_131</item>
+        <item>hellochrome_133</item>
+        <item>helloios_13</item>
+        <item>helloios_14</item>
+        <item>helloedge_106</item>
+        <item>hellosafari_26_3</item>
+        <item>hello360_11_0</item>
+        <item>helloqq_11_1</item>
+        <item>hellogolang</item>
+        <item>hellorandomized</item>
+        <item>hellorandomizedalpn</item>
+        <item>hellorandomizednoalpn</item>
+        <item>hellofirefox_auto</item>
+        <item>hellofirefox_63</item>
+        <item>hellofirefox_65</item>
+        <item>hellofirefox_99</item>
+        <item>hellofirefox_102</item>
+        <item>hellofirefox_105</item>
+        <item>hellochrome_auto</item>
+        <item>hellochrome_70</item>
+        <item>hellochrome_72</item>
+        <item>hellochrome_83</item>
+        <item>hellochrome_87</item>
+        <item>hellochrome_96</item>
+        <item>hellochrome_100</item>
+        <item>hellochrome_102</item>
+        <item>hellochrome_106_shuffle</item>
+        <item>helloios_auto</item>
+        <item>helloedge_85</item>
+        <item>helloedge_auto</item>
+        <item>hellosafari_16_0</item>
+        <item>hellosafari_auto</item>
+        <item>helloqq_auto</item>
+        <item>hellochrome_115_pq</item>
+        <item>hellochrome_120_pq</item>
+    </string-array>
+
+    <string-array name="reality_fingerprint_value">
+        <item />
+        <item>chrome</item>
+        <item>firefox</item>
+        <item>safari</item>
+        <item>ios</item>
+        <item>edge</item>
+        <item>qq</item>
+        <item>random</item>
+        <item>randomized</item>
+        <item>randomizednoalpn</item>
+        <item>hellofirefox_120</item>
+        <item>hellofirefox_148</item>
+        <item>hellochrome_120</item>
+        <item>hellochrome_131</item>
+        <item>hellochrome_133</item>
+        <item>helloios_13</item>
+        <item>helloios_14</item>
+        <item>helloedge_106</item>
+        <item>hellosafari_26_3</item>
+        <item>hello360_11_0</item>
+        <item>helloqq_11_1</item>
+        <item>hellogolang</item>
+        <item>hellorandomized</item>
+        <item>hellorandomizedalpn</item>
+        <item>hellorandomizednoalpn</item>
+        <item>hellofirefox_auto</item>
+        <item>hellofirefox_63</item>
+        <item>hellofirefox_65</item>
+        <item>hellofirefox_99</item>
+        <item>hellofirefox_102</item>
+        <item>hellofirefox_105</item>
+        <item>hellochrome_auto</item>
+        <item>hellochrome_70</item>
+        <item>hellochrome_72</item>
+        <item>hellochrome_83</item>
+        <item>hellochrome_87</item>
+        <item>hellochrome_96</item>
+        <item>hellochrome_100</item>
+        <item>hellochrome_102</item>
+        <item>hellochrome_106_shuffle</item>
+        <item>helloios_auto</item>
+        <item>helloedge_85</item>
+        <item>helloedge_auto</item>
+        <item>hellosafari_16_0</item>
+        <item>hellosafari_auto</item>
+        <item>helloqq_auto</item>
+        <item>hellochrome_115_pq</item>
+        <item>hellochrome_120_pq</item>
+    </string-array>
+
+    <string-array name="group_orders">
+        <item>@string/group_order_origin</item>
+        <item>@string/group_order_by_name</item>
+        <item>@string/group_order_by_delay</item>
+    </string-array>
+
+    <string-array name="ssh_auth_type">
+        <item>@string/ssh_auth_type_none</item>
+        <item>@string/password</item>
+        <item>@string/ssh_public_key</item>
+    </string-array>
+
+    <string-array name="tun_implementation">
+        <item>gVisor</item>
+        <item>System</item>
+    </string-array>
+
+    <string-array name="network_type_entry">
+        <item>@string/network_data</item>
+        <item>@string/network_wifi</item>
+        <item>@string/network_bt</item>
+        <item>@string/network_eth</item>
+        <item>@string/network_usb</item>
+        <item>@string/network_satellite</item>
+    </string-array>
+
+    <string-array name="network_type_value">
+        <item>data</item>
+        <item>wifi</item>
+        <item>bluetooth</item>
+        <item>ethernet</item>
+        <item>usb</item>
+        <item>satellite</item>
+    </string-array>
+
+    <string-array name="tasker_action_entry">
+        <item>@string/tasker_action_start_service</item>
+        <item>@string/tasker_action_stop_service</item>
+    </string-array>
+
+    <string-array name="tasker_outbound_entry">
+        <item>@string/tasker_start_current_profile</item>
+        <item>@string/route_profile</item>
+    </string-array>
+
+    <string-array name="root_ca_provider_entry">
+        <item>@string/root_ca_mozilla</item>
+        <item>@string/root_ca_system</item>
+        <item>@string/root_ca_system_and_user</item>
+        <item>@string/route_rules_custom</item>
+    </string-array>
+
+    <string-array name="packet_encoding_entry">
+        <item />
+        <item>packet</item>
+        <item>xudp</item>
+    </string-array>
+
+    <string-array name="packet_encoding_value">
+        <item>none</item>
+        <item>packet</item>
+        <item>xudp</item>
+    </string-array>
+
+    <string-array name="mieru_protocol">
+        <item>TCP</item>
+        <item>UDP</item>
+    </string-array>
+
+    <string-array name="tuic_udp_relay_mode_value">
+        <item>native</item>
+        <item>quic</item>
+    </string-array>
+
+    <string-array name="tuic_congestion_controller_value">
+        <item>cubic</item>
+        <item>new_reno</item>
+        <item>bbr</item>
+    </string-array>
+
+    <string-array name="mieru_mux_level_entry">
+        <item>MULTIPLEXING_DEFAULT</item>
+        <item>MULTIPLEXING_OFF</item>
+        <item>MULTIPLEXING_LOW</item>
+        <item>MULTIPLEXING_MIDDLE</item>
+        <item>MULTIPLEXING_HIGH</item>
+    </string-array>
+
+    <string-array name="mieru_mux_level_value">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+
+    <string-array name="dns_query_strategy">
+        <item>@string/domain_strategy_ipv4_and_ipv6</item>
+        <item>@string/domain_strategy_ipv4_only</item>
+        <item>@string/domain_strategy_ipv6_only</item>
+    </string-array>
+
+    <string-array name="dns_query_strategy_value">
+        <item>UseIP</item>
+        <item>UseIPv4</item>
+        <item>UseIPv6</item>
+    </string-array>
+
+    <string-array name="outbound_domain_strategy">
+        <item>@string/disable</item>
+        <item>@string/domain_strategy_ipv4_only</item>
+        <item>@string/domain_strategy_prefer_ipv4</item>
+        <item>@string/domain_strategy_ipv4_and_ipv6</item>
+        <item>@string/domain_strategy_prefer_ipv6</item>
+        <item>@string/domain_strategy_ipv6_only</item>
+    </string-array>
+
+    <string-array name="outbound_domain_strategy_value">
+        <item>AsIs</item>
+        <item>UseIPv4</item>
+        <item>PreferIPv4</item>
+        <item>UseIP</item>
+        <item>PreferIPv6</item>
+        <item>UseIPv6</item>
+    </string-array>
+
+    <string-array name="probe_cert_protocol">
+        <item>TLS</item>
+        <item>QUIC</item>
+    </string-array>
+
+    <string-array name="front_landing_proxy_entry">
+        <item>@string/disable</item>
+        <item>@string/route_profile</item>
+    </string-array>
+
+    <string-array name="front_landing_proxy_value">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+    <string-array name="splithttp_mode_entry">
+        <item>AUTO</item>
+        <item>PACKET-UP</item>
+        <item>STREAM-UP</item>
+        <item>STREAM-ONE</item>
+    </string-array>
+
+    <string-array name="splithttp_mode_value">
+        <item>auto</item>
+        <item>packet-up</item>
+        <item>stream-up</item>
+        <item>stream-one</item>
+    </string-array>
+
+    <string-array name="log_level_entry">
+        <item>debug</item>
+        <item>info</item>
+        <item>warning</item>
+        <item>error</item>
+        <item>none</item>
+    </string-array>
+
+    <string-array name="log_level_value">
+        <item>4</item>
+        <item>3</item>
+        <item>2</item>
+        <item>1</item>
+        <item>0</item>
+    </string-array>
+
+    <string-array name="fab_style_entry">
+        <item>SagerNet</item>
+        <item>Shadowsocks</item>
+    </string-array>
+
+    <string-array name="language_entry">
+        <item>@string/language_system_default</item>
+        <item>@string/language_ar_display_name</item>
+        <item>@string/language_cs_display_name</item>
+        <item>@string/language_en_display_name</item>
+        <item>@string/language_es_display_name</item>
+        <item>@string/language_fa_display_name</item>
+        <item>@string/language_fr_display_name</item>
+        <item>@string/language_id_display_name</item>
+        <item>@string/language_it_display_name</item>
+        <item>@string/language_ja_display_name</item>
+        <item>@string/language_ko_display_name</item>
+        <item>@string/language_nb_NO_display_name</item>
+        <item>@string/language_ru_display_name</item>
+        <item>@string/language_ta_display_name</item>
+        <item>@string/language_tr_display_name</item>
+        <item>@string/language_zh_Hans_CN_display_name</item>
+        <item>@string/language_zh_Hant_TW_display_name</item>
+    </string-array>
+
+    <string-array name="language_value">
+        <item />
+        <item>ar</item>
+        <item>cs</item>
+        <item>en-US</item>
+        <item>es</item>
+        <item>fa</item>
+        <item>fr</item>
+        <item>id</item>
+        <item>it</item>
+        <item>ja</item>
+        <item>ko</item>
+        <item>nb-NO</item>
+        <item>ru</item>
+        <item>ta</item>
+        <item>tr</item>
+        <item>zh-Hans-CN</item>
+        <item>zh-Hant-TW</item>
+    </string-array>
+
+    <string-array name="route_mode">
+        <item>@string/route_mode_rule</item>
+        <item>@string/route_mode_global</item>
+        <item>@string/route_mode_direct</item>
+    </string-array>
+
+    <string-array name="mieru_handshake_mode_entry">
+        <item>HANDSHAKE_DEFAULT</item>
+        <item>HANDSHAKE_STANDARD</item>
+        <item>HANDSHAKE_NO_WAIT</item>
+    </string-array>
+
+    <string-array name="mieru_handshake_mode_value">
+        <item>2</item>
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+    <string-array name="tls_fragmentation_entry">
+        <item>@string/tls_record_fragmentation</item>
+        <item>@string/tcp_segmentation</item>
+        <item>@string/tls_record_fragmentation_and_tcp_segmentation</item>
+    </string-array>
+
+    <string-array name="tls_fragmentation_value">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="sing_mux_protocol_value">
+        <item>h2mux</item>
+        <item>smux</item>
+        <item>yamux</item>
+    </string-array>
+
+    <string-array name="cert_hash_type">
+        <item>@string/pinned_peer_certificate_sha256</item>
+        <item>@string/pinned_peer_certificate_public_key_sha256</item>
+        <item>@string/pinned_peer_certificate_chain_sha256</item>
+    </string-array>
+
+    <string-array name="simple_obfs_wrapper">
+        <item>http</item>
+        <item>tls</item>
+    </string-array>
+
+    <string-array name="v2ray_plugin_mode">
+        <item>websocket-http</item>
+        <item>websocket-tls</item>
+        <item>quic-tls</item>
+    </string-array>
+
+    <string-array name="v2ray_plugin_log_level">
+        <item>debug</item>
+        <item>info</item>
+        <item>warning</item>
+        <item>error</item>
+        <item>none</item>
+    </string-array>
+
+    <string-array name="hysteria2_congestion_control">
+        <item>bbr</item>
+        <item>reno</item>
+    </string-array>
+
+    <string-array name="hysteria2_bbr_profile">
+        <item>standard</item>
+        <item>conservative</item>
+        <item>aggressive</item>
+    </string-array>
+
+    <string-array name="shadowquic_congestion_control_value">
+        <item>bbr</item>
+        <item>cubic</item>
+        <item>new_reno</item>
+    </string-array>
+
+    <string-array name="hysteria2_obfs_type">
+        <item />
+        <item>salamander</item>
+        <item>gecko</item>
+    </string-array>
+
+    <string-array name="snell_version_value">
+        <item>4</item>
+        <item>6</item>
+    </string-array>
+
+    <string-array name="snell_obfs_value">
+        <item>none</item>
+        <item>http</item>
+        <item>tls</item>
+    </string-array>
+
+    <string-array name="snell_mode_value">
+        <item>default</item>
+        <item>unshaped</item>
+        <item>unsafe-raw</item>
+    </string-array>
+
+    <string-array name="stun_test_type">
+        <item>@string/stun_test</item>
+        <item>@string/stun_legacy_test</item>
+        <item>@string/udp</item>
+        <item>@string/tcp</item>
+    </string-array>
+
+    <string-array name="masque_transport_layer_encryption_value">
+        <item/>
+        <item>tls</item>
+    </string-array>
+
+</resources>

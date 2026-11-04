@@ -1,5 +1,0 @@
-<p>A VPN client for Android, bypass DPI, BLACK, WHITE LIST</p>
-
-<h3>Telegram Channel</h3>
-
-<p><a href="https://t.me/openlibrecommunity">openlibrecommunity</a></p>

@@ -1,0 +1,14 @@
+@echo off
+
+set CGO_LDFLAGS=-Wl,-z,max-page-size=16384
+
+gomobile bind -o libexclavecore.aar -v -androidapi 21 -trimpath -ldflags="-s -buildid=" -tags="with_clash" "github.com/exclavenetwork/libexclavecore" ./owenbatch
+if errorlevel 1 (
+    exit /b 1
+)
+
+set "proj=..\..\app\libs"
+
+if exist "%proj%" (
+    copy /Y libexclavecore.aar "%proj%"
+)

@@ -1,0 +1,353 @@
+/******************************************************************************
+ *                                                                            *
+ * Copyright (C) 2023  dyhkwong                                               *
+ *                                                                            *
+ * This program is free software: you can redistribute it and/or modify       *
+ * it under the terms of the GNU General Public License as published by       *
+ * the Free Software Foundation, either version 3 of the License, or          *
+ *  (at your option) any later version.                                       *
+ *                                                                            *
+ * This program is distributed in the hope that it will be useful,            *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+ * GNU General Public License for more details.                               *
+ *                                                                            *
+ * You should have received a copy of the GNU General Public License          *
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.      *
+ *                                                                            *
+ ******************************************************************************/
+
+package io.nekohasekai.sagernet.fmt.hysteria2;
+
+import androidx.annotation.NonNull;
+
+import com.esotericsoftware.kryo.io.ByteBufferInput;
+import com.esotericsoftware.kryo.io.ByteBufferOutput;
+
+import org.jetbrains.annotations.NotNull;
+
+import io.nekohasekai.sagernet.fmt.AbstractBean;
+import io.nekohasekai.sagernet.fmt.KryoConverters;
+import io.nekohasekai.sagernet.ktx.NetsKt;
+import libexclavecore.Libexclavecore;
+
+public class Hysteria2Bean extends AbstractBean {
+
+    public String auth;
+    public String obfsPassword;
+    public String sni;
+    public String pinnedPeerCertificateSha256;
+    public String pinnedPeerCertificatePublicKeySha256;
+    public String pinnedPeerCertificateChainSha256;
+    public String certificates;
+    public Boolean allowInsecure;
+    public Long uploadMbps;
+    public Long downloadMbps;
+    public String serverPorts;
+    public Long hopInterval;
+    public Long hopIntervalMin;
+    public Long hopIntervalMax;
+    public Boolean echEnabled;
+    public String echConfigList;
+    public String echQueryName;
+    public String mtlsCertificate;
+    public String mtlsCertificatePrivateKey;
+    public String congestionControl;
+    public String bbrProfile;
+    public Boolean omitMaxDatagramFrameSize;
+    public String obfsType;
+    public Integer geckoMinPacketSize;
+    public Integer geckoMaxPacketSize;
+    public String serverNameToVerify;
+    public Boolean chromeParrot;
+
+    @Override
+    public void initializeDefaultValues() {
+        super.initializeDefaultValues();
+        if (auth == null) auth = "";
+        if (obfsPassword == null) obfsPassword = "";
+        if (sni == null) sni = "";
+        if (pinnedPeerCertificateSha256 == null) pinnedPeerCertificateSha256 = "";
+        if (pinnedPeerCertificatePublicKeySha256 == null) pinnedPeerCertificatePublicKeySha256 = "";
+        if (pinnedPeerCertificateChainSha256 == null) pinnedPeerCertificateChainSha256 = "";
+        if (certificates == null) certificates = "";
+        if (allowInsecure == null) allowInsecure = false;
+        if (uploadMbps == null) uploadMbps = 0L;
+        if (downloadMbps == null) downloadMbps = 0L;
+        if (serverPorts == null) serverPorts = "1080";
+        if (hopInterval == null) hopInterval = 0L;
+        if (hopIntervalMin == null) hopIntervalMin = 0L;
+        if (hopIntervalMax == null) hopIntervalMax = 0L;
+        if (echEnabled == null) echEnabled = false;
+        if (echConfigList == null) echConfigList = "";
+        if (echQueryName == null) echQueryName = "";
+        if (mtlsCertificate == null) mtlsCertificate = "";
+        if (mtlsCertificatePrivateKey == null) mtlsCertificatePrivateKey = "";
+        if (congestionControl == null) congestionControl = "bbr";
+        if (bbrProfile == null) bbrProfile = "standard";
+        if (omitMaxDatagramFrameSize == null) omitMaxDatagramFrameSize = false;
+        if (obfsType == null) obfsType = "";
+        if (geckoMinPacketSize == null) geckoMinPacketSize = 0;
+        if (geckoMaxPacketSize == null) geckoMaxPacketSize = 0;
+        if (serverNameToVerify == null) serverNameToVerify = "";
+        if (chromeParrot == null) chromeParrot = false;
+    }
+
+    @Override
+    public void serialize(ByteBufferOutput output) {
+        output.writeInt(12);
+        super.serialize(output);
+        output.writeString(auth);
+        switch (obfsType) {
+            case "salamander", "gecko":
+                output.writeString(obfsPassword);
+                break;
+            default:
+                output.writeString(""); // obfsPassword
+                break;
+        }
+        output.writeString(sni);
+        output.writeString(pinnedPeerCertificateSha256);
+        output.writeString(pinnedPeerCertificatePublicKeySha256);
+        output.writeString(pinnedPeerCertificateChainSha256);
+        output.writeString(certificates);
+        output.writeBoolean(allowInsecure);
+        output.writeLong(uploadMbps);
+        output.writeLong(downloadMbps);
+        output.writeString(serverPorts);
+        output.writeLong(hopInterval);
+        output.writeString(echConfigList);
+        output.writeString(mtlsCertificate);
+        output.writeString(mtlsCertificatePrivateKey);
+
+        output.writeBoolean(echEnabled);
+        output.writeLong(hopIntervalMin);
+        output.writeLong(hopIntervalMax);
+        output.writeString(congestionControl);
+        output.writeString(bbrProfile);
+        if (chromeParrot) {
+            output.writeBoolean(false); // omitMaxDatagramFrameSize
+        } else {
+            output.writeBoolean(omitMaxDatagramFrameSize);
+        }
+        output.writeString(obfsType);
+        switch (obfsType) {
+            case "gecko":
+                output.writeInt(geckoMinPacketSize);
+                output.writeInt(geckoMaxPacketSize);
+                break;
+            default:
+                output.writeInt(0); // geckoMinPacketSize
+                output.writeInt(0); // geckoMaxPacketSize
+                break;
+        }
+        output.writeString(serverNameToVerify);
+        output.writeBoolean(chromeParrot);
+        output.writeString(echQueryName);
+    }
+
+    @Override
+    public void deserialize(ByteBufferInput input) {
+        int version = input.readInt();
+        super.deserialize(input);
+        auth = input.readString();
+        obfsPassword = input.readString();
+        if (!obfsPassword.isEmpty() && version < 9) {
+            obfsType = "salamander";
+        }
+        sni = input.readString();
+        pinnedPeerCertificateSha256 = input.readString();
+        if (version >= 4) {
+            pinnedPeerCertificatePublicKeySha256 = input.readString();
+            pinnedPeerCertificateChainSha256 = input.readString();
+        }
+        certificates = input.readString();
+        allowInsecure = input.readBoolean();
+        if (version <= 2) {
+            uploadMbps = (long) input.readInt();
+        } else {
+            uploadMbps = input.readLong();
+        }
+        if (version <= 2) {
+            downloadMbps = (long) input.readInt();
+        } else {
+            downloadMbps = input.readLong();
+        }
+        if (version < 5) {
+            input.readBoolean(); // disableMtuDiscovery, removed
+            input.readInt(); // initStreamReceiveWindow, removed
+            input.readInt(); // maxStreamReceiveWindow, removed
+            input.readInt(); // initConnReceiveWindow, removed
+            input.readInt(); // maxConnReceiveWindow, removed
+        }
+        if (version < 2) {
+            serverPorts = serverPort.toString();
+        }
+        if (version >= 2) {
+            serverPorts = input.readString();
+            if (version == 2) {
+                hopInterval = (long) input.readInt();
+            } else {
+                hopInterval = input.readLong();
+            }
+        }
+        if (version >= 4) {
+            echConfigList = input.readString();
+            if (version <= 5 && !echConfigList.isEmpty()) {
+                echEnabled = true;
+            }
+            mtlsCertificate = input.readString();
+            mtlsCertificatePrivateKey = input.readString();
+        }
+        if (version >= 6) {
+            echEnabled = input.readBoolean();
+        }
+        if (version >= 7) {
+            hopIntervalMin = input.readLong();
+            hopIntervalMax = input.readLong();
+            congestionControl = input.readString();
+            bbrProfile = input.readString();
+        }
+        if (version >= 8) {
+            omitMaxDatagramFrameSize = input.readBoolean();
+        }
+        if (version >= 9) {
+            obfsType = input.readString();
+            switch (obfsType) {
+                case "salamander":
+                    input.readInt(); // geckoMinPacketSize
+                    input.readInt(); // geckoMaxPacketSize
+                    geckoMinPacketSize = 0;
+                    geckoMaxPacketSize = 0;
+                    break;
+                case "gecko":
+                    geckoMinPacketSize = input.readInt();
+                    geckoMaxPacketSize = input.readInt();
+                    break;
+                default:
+                    input.readInt(); // geckoMinPacketSize
+                    input.readInt(); // geckoMaxPacketSize
+                    geckoMinPacketSize = 0;
+                    geckoMaxPacketSize = 0;
+                    obfsPassword = "";
+                    break;
+            }
+        }
+        if (version >= 10) {
+            serverNameToVerify = input.readString();
+        }
+        if (version >= 11) {
+            chromeParrot = input.readBoolean();
+            if (chromeParrot) {
+                omitMaxDatagramFrameSize = false;
+            }
+        }
+        if (version >= 12) {
+            echQueryName = input.readString();
+        }
+    }
+
+    @Override
+    public void applyFeatureSettings(AbstractBean other) {
+        if (!(other instanceof Hysteria2Bean bean)) return;
+        if (allowInsecure) {
+            bean.allowInsecure = true;
+        }
+        bean.uploadMbps = uploadMbps;
+        bean.downloadMbps = downloadMbps;
+        if (bean.pinnedPeerCertificateSha256 == null || bean.pinnedPeerCertificateSha256.isEmpty() && !pinnedPeerCertificateSha256.isEmpty()) {
+            bean.pinnedPeerCertificateSha256 = pinnedPeerCertificateSha256;
+        }
+        if (bean.pinnedPeerCertificatePublicKeySha256 == null || bean.pinnedPeerCertificatePublicKeySha256.isEmpty() &&
+                !pinnedPeerCertificatePublicKeySha256.isEmpty()) {
+            bean.pinnedPeerCertificatePublicKeySha256 = pinnedPeerCertificatePublicKeySha256;
+        }
+        if (bean.pinnedPeerCertificateChainSha256 == null || bean.pinnedPeerCertificateChainSha256.isEmpty() &&
+                !pinnedPeerCertificateChainSha256.isEmpty()) {
+            bean.pinnedPeerCertificateChainSha256 = pinnedPeerCertificateChainSha256;
+        }
+        if (bean.certificates == null || bean.certificates.isEmpty() && !certificates.isEmpty()) {
+            bean.certificates = certificates;
+        }
+        if ((bean.echEnabled == null || !bean.echEnabled) && echEnabled) {
+            bean.echEnabled = echEnabled;
+        }
+        if ((bean.echConfigList == null || bean.echConfigList.isEmpty()) && !echConfigList.isEmpty()) {
+            bean.echConfigList = echConfigList;
+        }
+        if ((bean.echQueryName == null || bean.echQueryName.isEmpty()) && !echQueryName.isEmpty()) {
+            bean.echQueryName = echQueryName;
+        }
+        bean.hopInterval = hopInterval;
+        bean.hopIntervalMin = hopIntervalMin;
+        bean.hopIntervalMax = hopIntervalMax;
+        bean.congestionControl = congestionControl;
+        bean.bbrProfile = bbrProfile;
+        bean.omitMaxDatagramFrameSize = omitMaxDatagramFrameSize;
+        if (bean.geckoMinPacketSize == null || bean.geckoMinPacketSize == 0) {
+            bean.geckoMinPacketSize = geckoMinPacketSize;
+        }
+        if (bean.geckoMaxPacketSize == null || bean.geckoMaxPacketSize == 0) {
+            bean.geckoMaxPacketSize = geckoMaxPacketSize;
+        }
+        bean.chromeParrot = chromeParrot;
+    }
+
+    @Override
+    public String displayAddress() {
+        if (Libexclavecore.isIPv6(serverAddress)) {
+            return "[" + serverAddress + "]:" + serverPorts;
+        } else {
+            return NetsKt.wrapIDN(serverAddress) + ":" + serverPorts;
+        }
+    }
+
+    @NotNull
+    @Override
+    public Hysteria2Bean clone() {
+        return KryoConverters.deserialize(new Hysteria2Bean(), KryoConverters.serialize(this));
+    }
+
+    public static final Creator<Hysteria2Bean> CREATOR = new CREATOR<>() {
+        @NonNull
+        @Override
+        public Hysteria2Bean newInstance() {
+            return new Hysteria2Bean();
+        }
+
+        @Override
+        public Hysteria2Bean[] newArray(int size) {
+            return new Hysteria2Bean[size];
+        }
+    };
+
+    @Override
+    public boolean isInsecure() {
+        if (Libexclavecore.isLoopbackIP(serverAddress) || serverAddress.equals("localhost")) {
+            return false;
+        }
+        if (echEnabled) {
+            // do not care if DNS server is reliable or not
+            return false;
+        }
+        if (!obfsPassword.isEmpty()) {
+            return false;
+        }
+        if (!allowInsecure) {
+            return false;
+        }
+        if (!pinnedPeerCertificateChainSha256.isEmpty()) {
+            return false;
+        }
+        if (!pinnedPeerCertificatePublicKeySha256.isEmpty()) {
+            return false;
+        }
+        if (!pinnedPeerCertificateSha256.isEmpty()) {
+            return false;
+        }
+        if (!NetsKt.listByLineOrComma(serverNameToVerify).isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+}

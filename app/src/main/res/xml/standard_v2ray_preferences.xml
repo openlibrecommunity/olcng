@@ -1,0 +1,460 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <EditTextPreference
+        app:icon="@drawable/ic_social_emoji_symbols"
+        app:key="profileName"
+        app:title="@string/profile_name"
+        app:useSimpleSummaryProvider="true" />
+
+    <PreferenceCategory app:title="@string/proxy_cat">
+
+        <EditTextPreference
+            app:icon="@drawable/ic_hardware_router"
+            app:key="serverAddress"
+            app:title="@string/server_address"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_maps_directions_boat"
+            app:key="serverPort"
+            app:title="@string/server_port"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_person_24"
+            app:key="serverUsername"
+            app:title="@string/username"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogLayout="@layout/layout_password_dialog"
+            app:icon="@drawable/ic_baseline_person_24"
+            app:key="serverUserId"
+            app:title="@string/uuid"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_maps_360"
+            app:key="serverAlterId"
+            app:title="@string/alter_id"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:defaultValue="auto"
+            app:entries="@array/vmess_encryption_value"
+            app:entryValues="@array/vmess_encryption_value"
+            app:icon="@drawable/ic_notification_enhanced_encryption"
+            app:key="serverEncryption"
+            app:singleLineTitle="false"
+            app:title="@string/enc_method"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.NonBlackEditTextPreference
+            app:defaultValue="none"
+            app:icon="@drawable/ic_notification_enhanced_encryption"
+            app:key="serverEncryptionForVless"
+            app:title="@string/enc_method"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:defaultValue="2"
+            app:entries="@array/socks_versions"
+            app:entryValues="@array/int_array_3"
+            app:icon="@drawable/ic_baseline_nfc_24"
+            app:key="serverProtocol"
+            app:singleLineTitle="false"
+            app:title="@string/app_version"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/xtls_flow_value"
+            app:entryValues="@array/xtls_flow_value"
+            app:icon="@drawable/ic_baseline_stream_24"
+            app:key="serverFlow"
+            app:singleLineTitle="false"
+            app:title="@string/flow"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/packet_encoding_entry"
+            app:entryValues="@array/packet_encoding_value"
+            app:icon="@drawable/baseline_widgets_24"
+            app:key="serverPacketEncoding"
+            app:singleLineTitle="false"
+            app:title="@string/packet_encoding"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/networks_entry"
+            app:entryValues="@array/networks_value"
+            app:icon="@drawable/ic_baseline_compare_arrows_24"
+            app:key="serverNetwork"
+            app:singleLineTitle="false"
+            app:title="@string/network"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:defaultValue="none"
+            app:entries="@array/kcp_quic_headers_entry"
+            app:entryValues="@array/kcp_quic_headers_value"
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="serverHeader"
+            app:singleLineTitle="false"
+            app:title="@string/header_type"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:defaultValue="none"
+            app:entries="@array/quic_security_value"
+            app:entryValues="@array/quic_security_value"
+            app:icon="@drawable/ic_baseline_security_24"
+            app:key="serverQuicSecurity"
+            app:singleLineTitle="false"
+            app:title="@string/quic_security"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_airplanemode_active_24"
+            app:key="serverHost"
+            app:title="@string/http_host"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_format_align_left_24"
+            app:key="serverPath"
+            app:title="@string/http_path"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_file_file_upload"
+            app:key="serverUploadSpeed"
+            app:title="@string/hysteria_upload_mbps"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_download_24"
+            app:key="serverDownloadSpeed"
+            app:title="@string/hysteria_download_mbps"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_fingerprint_24"
+            app:key="serverHysteria2ChromeParrot"
+            app:summary="@string/chrome_parrot_summary"
+            app:title="@string/chrome_parrot" />
+        <EditTextPreference
+            app:dialogLayout="@layout/layout_password_dialog"
+            app:icon="@drawable/ic_settings_password"
+            app:key="serverPassword"
+            app:title="@string/password"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogLayout="@layout/layout_password_dialog"
+            app:icon="@drawable/ic_baseline_format_align_left_24"
+            app:key="serverMekyaKcpSeed"
+            app:title="@string/kcp_seed"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:defaultValue="none"
+            app:entries="@array/kcp_quic_headers_entry"
+            app:entryValues="@array/kcp_quic_headers_value"
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="serverMekyaKcpHeaderType"
+            app:singleLineTitle="false"
+            app:title="@string/header_type"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_airplanemode_active_24"
+            app:key="serverMekyaUrl"
+            app:title="@string/url"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:defaultValue="none"
+            app:entries="@array/transport_layer_encryption_entry"
+            app:entryValues="@array/transport_layer_encryption_value"
+            app:icon="@drawable/ic_baseline_layers_24"
+            app:key="serverSecurity"
+            app:singleLineTitle="false"
+            app:title="@string/security"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverSecurityCategory"
+        app:title="@string/security_settings">
+        <EditTextPreference
+            app:icon="@drawable/ic_action_copyright"
+            app:key="serverSNI"
+            app:title="@string/sni"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/one_per_line"
+            app:icon="@drawable/ic_baseline_legend_toggle_24"
+            app:key="serverALPN"
+            app:title="@string/alpn"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="serverCertificates"
+            app:title="@string/certificates"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/pinned_peer_certificate_sha256_hex_dialog_message"
+            app:icon="@drawable/ic_baseline_push_pin_24"
+            app:key="serverPinnedCertificate"
+            app:title="@string/pinned_peer_certificate_sha256"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/pinned_peer_certificate_sha256_base64_dialog_message"
+            app:icon="@drawable/ic_baseline_push_pin_24"
+            app:key="serverPinnedCertificatePublicKey"
+            app:title="@string/pinned_peer_certificate_public_key_sha256"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/pinned_peer_certificate_sha256_base64_dialog_message"
+            app:icon="@drawable/ic_baseline_push_pin_24"
+            app:key="serverPinnedCertificateChain"
+            app:title="@string/pinned_peer_certificate_chain_sha256"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:icon="@drawable/ic_notification_enhanced_encryption"
+            app:key="serverAllowInsecure"
+            app:summary="@string/allow_insecure_sum"
+            app:title="@string/allow_insecure" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/utls_entry"
+            app:entryValues="@array/utls_value"
+            app:icon="@drawable/ic_baseline_fingerprint_24"
+            app:key="serverUTLSFingerprint"
+            app:singleLineTitle="false"
+            app:title="@string/utls_fingerprint"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogLayout="@layout/layout_password_dialog"
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="serverRealityPublicKey"
+            app:title="@string/reality_public_key"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_person_24"
+            app:key="serverRealityShortId"
+            app:title="@string/reality_short_id"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_person_24"
+            app:key="serverRealityMldsa65Verify"
+            app:title="@string/reality_mldsa65_verify"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/reality_fingerprint_entry"
+            app:entryValues="@array/reality_fingerprint_value"
+            app:icon="@drawable/ic_baseline_fingerprint_24"
+            app:key="serverRealityFingerprint"
+            app:singleLineTitle="false"
+            app:title="@string/reality_fingerprint"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_action_lock"
+            app:key="serverMtlsCertificate"
+            app:title="@string/mtls_certificate"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="serverMtlsCertificatePrivateKey"
+            app:title="@string/mtls_certificate_private_key"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:icon="@drawable/baseline_construction_24"
+            app:key="serverEchEnabled"
+            app:title="@string/ech" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_security_24"
+            app:key="serverEchConfig"
+            app:title="@string/ech_config_list"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_manage_search_24"
+            app:key="serverEchQueryName"
+            app:title="@string/ech_query_name"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/one_per_line"
+            app:icon="@drawable/ic_action_copyright"
+            app:key="serverServerNameToVerify"
+            app:title="@string/server_name_to_verify"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:icon="@drawable/baseline_construction_24"
+            app:key="serverRealityDisableX25519Mlkem768"
+            app:summary="@string/reality_breaking_change_summary"
+            app:title="@string/reality_disable_x25519mlkem768" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverWsCategory"
+        app:title="@string/cag_ws">
+        <EditTextPreference
+            app:defaultValue="0"
+            app:icon="@drawable/ic_baseline_compare_arrows_24"
+            app:key="serverWsMaxEarlyData"
+            app:title="@string/ws_max_early_data"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_stream_24"
+            app:key="serverEarlyDataHeaderName"
+            app:title="@string/early_data_header_name"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="serverWsBrowserForwarding"
+            app:summary="@string/ws_browser_forwarding_sum"
+            app:title="@string/ws_browser_forwarding" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverShCategory"
+        app:title="@string/cag_splithttp">
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="serverShBrowserForwarding"
+            app:title="@string/ws_browser_forwarding" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:defaultValue="auto"
+            app:entries="@array/splithttp_mode_entry"
+            app:entryValues="@array/splithttp_mode_value"
+            app:icon="@drawable/ic_baseline_stream_24"
+            app:key="serverSplithttpMode"
+            app:singleLineTitle="false"
+            app:title="@string/splithttp_mode"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_action_settings"
+            app:key="serverSplithttpExtra"
+            app:title="@string/splithttp_extra"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverGrpcCategory"
+        app:title="@string/cag_grpc">
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_format_align_left_24"
+            app:key="serverGrpcServiceNameCompat"
+            app:title="@string/grpc_service_name_compat"
+            app:summary="@string/grpc_service_name_compat_sum" />
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_format_align_left_24"
+            app:key="serverGrpcMultiMode"
+            app:title="@string/grpc_multi_mode" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverVMessExperimentsCategory"
+        app:title="@string/experimental_settings">
+        <SwitchPreference
+            app:icon="@drawable/baseline_construction_24"
+            app:key="serverVMessExperimentalAuthenticatedLength"
+            app:summary="@string/experimental_authenticated_length"
+            app:title="AuthenticatedLength" />
+        <SwitchPreference
+            app:icon="@drawable/baseline_construction_24"
+            app:key="serverVMessExperimentalNoTerminationSignal"
+            app:summary="@string/experimental_no_termination_signal"
+            app:title="NoTerminationSignal" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverPluginCategory"
+        app:title="@string/plugin">
+        <com.github.shadowsocks.preference.PluginPreference
+            app:icon="@drawable/ic_av_playlist_add"
+            app:key="serverPlugin"
+            app:persistent="false"
+            app:title="@string/plugin"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_action_settings"
+            app:key="serverPluginConfigure"
+            app:persistent="false"
+            app:title="@string/plugin_configure"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverSsExperimentsCategory"
+        app:title="@string/experimental_settings">
+        <SwitchPreference
+            app:icon="@drawable/baseline_construction_24"
+            app:key="serverReducedIvHeadEntropy"
+            app:summary="@string/experimental_reduced_iv_head_entropy"
+            app:title="ReducedIvHeadEntropy"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverHTTPConnectUDPCategory"
+        app:title="@string/experimental_settings">
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_compare_arrows_24"
+            app:key="serverHTTPConnectUDP"
+            app:title="@string/udp" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_color_lens_24"
+            app:key="serverHTTPConnectUDPURITemplate"
+            app:title="@string/uri_template"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverSingUotCategory"
+        app:title="sing-uot settings">
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_compare_arrows_24"
+            app:key="serverSingUot"
+            app:title="Enable UDP over TCP" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverMuxCategory"
+        app:title="@string/mux_settings">
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_compare_arrows_24"
+            app:key="serverMux"
+            app:title="@string/enable_mux"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:defaultValue="8"
+            app:icon="@drawable/ic_baseline_low_priority_24"
+            app:key="serverMuxConcurrency"
+            app:title="@string/mux_concurrency"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/packet_encoding_entry"
+            app:entryValues="@array/packet_encoding_value"
+            app:icon="@drawable/baseline_widgets_24"
+            app:key="serverMuxPacketEncoding"
+            app:singleLineTitle="false"
+            app:title="@string/packet_encoding"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="serverSingMuxCategory"
+        app:title="sing-mux settings">
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_compare_arrows_24"
+            app:key="serverSingMux"
+            app:title="Enable sing-mux"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/sing_mux_protocol_value"
+            app:entryValues="@array/sing_mux_protocol_value"
+            app:defaultValue="h2mux"
+            app:key="serverSingMuxProtocol"
+            app:singleLineTitle="false"
+            app:title="Protocol"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="serverSingMuxMaxConnections"
+            app:title="Maximum connections"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="serverSingMuxMinStreams"
+            app:title="Minimal streams"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="serverSingMuxMaxStreams"
+            app:title="Maximum streams"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:key="serverSingMuxPadding"
+            app:title="Padding"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+        app:key="mode"
+        app:persistent="false"
+        app:entries="@array/v2ray_plugin_mode"
+        app:entryValues="@array/v2ray_plugin_mode"
+        app:singleLineTitle="false"
+        app:title="Transport mode"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        app:key="host"
+        app:persistent="false"
+        app:title="Hostname"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        app:key="path"
+        app:persistent="false"
+        app:title="Path"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        app:key="mux"
+        app:persistent="false"
+        app:title="Concurrent connections"
+        app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        app:key="certRaw"
+        app:persistent="false"
+        app:title="Certificate for TLS verification"
+        app:useSimpleSummaryProvider="true" />
+    <PreferenceCategory
+        app:title="Debug">
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:key="loglevel"
+            app:persistent="false"
+            app:entries="@array/v2ray_plugin_log_level"
+            app:entryValues="@array/v2ray_plugin_log_level"
+            app:icon="@drawable/ic_baseline_bug_report_24"
+            app:singleLineTitle="false"
+            app:title="Logcat level"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+</PreferenceScreen>

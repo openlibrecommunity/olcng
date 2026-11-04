@@ -1,0 +1,167 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <EditTextPreference
+        app:icon="@drawable/ic_social_emoji_symbols"
+        app:key="profileName"
+        app:title="@string/profile_name"
+        app:useSimpleSummaryProvider="true" />
+
+    <PreferenceCategory app:title="@string/proxy_cat">
+
+        <EditTextPreference
+            app:icon="@drawable/ic_hardware_router"
+            app:key="serverAddress"
+            app:title="@string/server_address"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_maps_directions_boat"
+            app:key="serverPorts"
+            app:title="@string/server_port"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogLayout="@layout/layout_password_dialog"
+            app:icon="@drawable/ic_settings_password"
+            app:key="serverPassword"
+            app:title="@string/password"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="serverHysteria2ObfsType"
+            app:entries="@array/hysteria2_obfs_type"
+            app:entryValues="@array/hysteria2_obfs_type"
+            app:singleLineTitle="false"
+            app:title="@string/obfs"
+            app:useSimpleSummaryProvider="true"/>
+        <EditTextPreference
+            app:dialogLayout="@layout/layout_password_dialog"
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="serverObfs"
+            app:title="@string/hysteria_obfs"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="serverHysteria2GeckoMinPacketSize"
+            app:title="@string/hysteria2_gecko_min_packet_size"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_texture_24"
+            app:key="serverHysteria2GeckoMaxPacketSize"
+            app:title="@string/hysteria2_gecko_max_packet_size"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_action_copyright"
+            app:key="serverSNI"
+            app:title="@string/sni"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:icon="@drawable/ic_notification_enhanced_encryption"
+            app:key="serverAllowInsecure"
+            app:summary="@string/allow_insecure_sum"
+            app:title="@string/allow_insecure" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="serverCertificates"
+            app:title="@string/certificates"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_file_file_upload"
+            app:key="serverUploadSpeed"
+            app:title="@string/hysteria_upload_mbps"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_download_24"
+            app:key="serverDownloadSpeed"
+            app:title="@string/hysteria_download_mbps"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_flip_camera_android_24"
+            app:key="serverHopInterval"
+            app:title="@string/hysteria_hop_interval"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_flip_camera_android_24"
+            app:key="serverHopIntervalMin"
+            app:title="@string/hysteria_hop_interval_min"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_flip_camera_android_24"
+            app:key="serverHopIntervalMax"
+            app:title="@string/hysteria_hop_interval_max"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/hysteria2_congestion_control"
+            app:entryValues="@array/hysteria2_congestion_control"
+            app:icon="@drawable/ic_baseline_compare_arrows_24"
+            app:key="serverCongestionController"
+            app:singleLineTitle="false"
+            app:title="@string/congestion_control"
+            app:useSimpleSummaryProvider="true" />
+        <io.nekohasekai.sagernet.widget.SimpleMenuPreference
+            app:entries="@array/hysteria2_bbr_profile"
+            app:entryValues="@array/hysteria2_bbr_profile"
+            app:icon="@drawable/ic_baseline_compare_arrows_24"
+            app:key="serverHysteria2BBRProfile"
+            app:singleLineTitle="false"
+            app:title="@string/hysteria_bbr_profile"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/pinned_peer_certificate_sha256_hex_dialog_message"
+            app:icon="@drawable/ic_baseline_push_pin_24"
+            app:key="serverPinnedCertificate"
+            app:title="@string/pinned_peer_certificate_sha256"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/pinned_peer_certificate_sha256_base64_dialog_message"
+            app:icon="@drawable/ic_baseline_push_pin_24"
+            app:key="serverPinnedCertificatePublicKey"
+            app:title="@string/pinned_peer_certificate_public_key_sha256"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/pinned_peer_certificate_sha256_base64_dialog_message"
+            app:icon="@drawable/ic_baseline_push_pin_24"
+            app:key="serverPinnedCertificateChain"
+            app:title="@string/pinned_peer_certificate_chain_sha256"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_action_lock"
+            app:key="serverMtlsCertificate"
+            app:title="@string/mtls_certificate"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_vpn_key_24"
+            app:key="serverMtlsCertificatePrivateKey"
+            app:title="@string/mtls_certificate_private_key"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:icon="@drawable/baseline_construction_24"
+            app:key="serverEchEnabled"
+            app:title="@string/ech" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_security_24"
+            app:key="serverEchConfig"
+            app:title="@string/ech_config_list"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:icon="@drawable/ic_baseline_manage_search_24"
+            app:key="serverEchQueryName"
+            app:title="@string/ech_query_name"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:dialogMessage="@string/one_per_line"
+            app:icon="@drawable/ic_action_copyright"
+            app:key="serverServerNameToVerify"
+            app:title="@string/server_name_to_verify"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:icon="@drawable/ic_baseline_fingerprint_24"
+            app:key="serverHysteria2ChromeParrot"
+            app:summary="@string/chrome_parrot_summary"
+            app:title="@string/chrome_parrot" />
+        <SwitchPreference
+            app:icon="@drawable/baseline_construction_24"
+            app:key="serverHysteria2OmitMaxDatagramFrameSize"
+            app:summary="@string/hysteria2_omit_max_datagram_frame_size_sum"
+            app:title="@string/hysteria2_omit_max_datagram_frame_size" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

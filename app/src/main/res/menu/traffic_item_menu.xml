@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/copy_label"
+        android:title="@string/copy_label" />
+    <item
+        android:id="@+id/copy_package_name"
+        android:title="@string/copy_package_name" />
+    <item
+        android:id="@+id/create_rule"
+        android:title="@string/create_rule" />
+</menu>

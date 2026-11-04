@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:installLocation="internalOnly">
+
+    <!--
+      The legacy flavor targets minSdk 21; a handful of AndroidX/Compose AARs
+      declare a higher minSdk in their own manifest even though their actual
+      code paths are guarded by runtime Build.VERSION checks (or simply are
+      not reached on the View-based legacy UI). Overriding here matches the
+      officially documented workaround for supporting minSdk < the library's
+      declared floor; see plugin/api and library/proto-stub build.gradle.kts
+      for the equivalent minSdk override on our own modules.
+    -->
+    <uses-sdk tools:overrideLibrary="com.google.zxing.client.android,androidx.compose.material3.ripple,androidx.compose.material3.windowsizeclass,androidx.compose.material3,androidx.compose.animation.core,androidx.compose.material.ripple,androidx.compose.animation,androidx.compose.foundation.layout,androidx.compose.foundation,androidx.compose.ui.geometry,androidx.compose.ui.tooling.preview,androidx.compose.ui.unit,androidx.compose.ui.graphics,androidx.compose.ui.util,androidx.compose.ui.text,androidx.compose.runtime.retain,androidx.compose.runtime.annotation,androidx.compose.runtime,androidx.compose.runtime.saveable,androidx.window.core,androidx.window,androidx.compose.ui,androidx.compose.ui.tooling.data,androidx.compose.ui.tooling" />
+
+    <permission
+        android:name="${applicationId}.SERVICE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="${applicationId}.SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
+        tools:ignore="BackgroundLocationPolicy" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:minSdkVersion="36" />
+    <uses-permission
+        android:name="android.permission.ACCESS_LOCAL_NETWORK"
+        android:minSdkVersion="37" />
+    <!-- INTERACT_ACROSS_USERS needs to be granted via ADB -->
+    <uses-permission
+        android:name="android.permission.INTERACT_ACROSS_USERS"
+        android:minSdkVersion="37"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+
+    <queries>
+        <intent>
+            <action android:name="com.github.shadowsocks.plugin.ACTION_NATIVE_PLUGIN" />
+        </intent>
+        <intent>
+            <action android:name="io.nekohasekai.sagernet.plugin.ACTION_NATIVE_PLUGIN" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <application
+        android:name="io.nekohasekai.sagernet.SagerNet"
+        android:allowBackup="true"
+        android:autoRevokePermissions="allowed"
+        android:banner="@mipmap/ic_launcher"
+        android:dataExtractionRules="@xml/backup_rules"
+        android:fullBackupContent="@xml/backup_descriptor"
+        android:fullBackupOnly="true"
+        android:hardwareAccelerated="true"
+        android:hasFragileUserData="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SagerNet.Start"
+        android:localeConfig="@xml/locales_config"
+        android:enableOnBackInvokedCallback="true"
+        tools:targetApi="33"
+        tools:ignore="Deprecated">
+        <meta-data
+            android:name="android.app.shortcuts"
+            android:resource="@xml/shortcuts" />
+
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeMainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+
+            <intent-filter android:label="@string/profile_import">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!--data android:scheme="http" /-->
+                <!--data android:scheme="https" /-->
+                <data android:scheme="ss" />
+                <data android:scheme="ssr" />
+                <data android:scheme="socks" />
+                <data android:scheme="socks4" />
+                <data android:scheme="socks4a" />
+                <data android:scheme="sock5" />
+                <data android:scheme="sock5h" />
+                <data android:scheme="vmess" />
+                <data android:scheme="vless" />
+                <data android:scheme="trojan" />
+                <data android:scheme="naive+https" />
+                <data android:scheme="naive+quic" />
+                <data android:scheme="hysteria2" />
+                <data android:scheme="hy2" />
+                <data android:scheme="juicity" />
+                <data android:scheme="tuic" />
+                <data android:scheme="wireguard" />
+                <data android:scheme="wg" />
+                <data android:scheme="mierus" />
+                <data android:scheme="quic" />
+                <data android:scheme="anytls" />
+                <data android:scheme="tt" />
+                <data android:scheme="sq" />
+                <data android:scheme="shadowquic" />
+                <data android:scheme="owenkey" />
+                <!-- happ://crypt.../crypt2.../crypt3.../crypt4.../crypt5/...
+                     RSA (+ ChaCha20-Poly1305 for crypt5) wrapped subscription
+                     links from the Happ client; decrypted locally in
+                     ComposeMainActivity.handleHappCryptLink, see HappLink.kt. -->
+                <data android:scheme="happ" />
+            </intent-filter>
+
+            <!-- oweng://add-subscription?url=<encoded subscription URL>[&hwid=1]
+                 Opens the Groups screen with the "Add subscription from URL"
+                 dialog pre-filled, instead of importing immediately, so the
+                 person can review the URL (and the per-subscription HWID
+                 toggle) before it's added. Kept as a separate filter from
+                 profile_import above since this isn't a profile/config link
+                 itself, just a shortcut into that dialog. -->
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="oweng" />
+                <data android:scheme="v2rayng" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.MainActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.AppManagerActivity"
+            android:exported="false"
+            android:label="@string/proxied_apps"
+            android:launchMode="singleTask" />
+
+        <activity-alias
+            android:name="xyz.zarazaex.olc.ui.MainActivity"
+            android:targetActivity="io.nekohasekai.sagernet.ui.compose.ComposeMainActivity"
+            android:exported="true" />
+
+        <!-- Compose Activities -->
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeProfileSettingsActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeGroupSettingsActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeRouteSettingsActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeAssetsActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeAppListActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeScannerActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.profile.ChainSettingsActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.profile.BalancerSettingsActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.profile.ConfigSettingsActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeConfigEditActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeStunActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeProbeCertActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeProfileSelectActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.compose.ComposeQuickToggleActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:label="@string/quick_toggle"
+            android:launchMode="singleTask"
+            android:taskAffinity="" />
+
+        <activity android:name="io.nekohasekai.sagernet.ui.profile.MASQUESettingsActivity" android:exported="false" />
+
+        <!-- Special Activities (not replaced by Compose) -->
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.VpnRequestActivity"
+            android:excludeFromRecents="true"
+            android:taskAffinity="" />
+        <activity
+            android:name=".QuickToggleShortcut"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:label="@string/quick_toggle"
+            android:launchMode="singleTask"
+            android:process=":bg"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.github.shadowsocks.plugin.v2ray.ConfigActivity" />
+        <activity
+            android:name="com.github.shadowsocks.plugin.obfs_local.ConfigActivity" />
+
+        <service
+            android:name="io.nekohasekai.sagernet.bg.ProxyService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":bg">
+
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="proxy" />
+        </service>
+
+        <service
+            android:name="io.nekohasekai.sagernet.bg.VpnService"
+            android:exported="false"
+            android:foregroundServiceType="systemExempted"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:process=":bg"
+            tools:ignore="ForegroundServicePermission,VpnServicePolicy" >
+
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="io.nekohasekai.sagernet.bg.TileService"
+            android:exported="true"
+            android:icon="@drawable/ic_service_active"
+            android:label="@string/quick_toggle"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:process=":bg"
+            tools:targetApi="n">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
+
+        <service
+            android:name="xyz.zarazaex.olc.service.V2RayVpnService"
+            android:exported="false"
+            android:foregroundServiceType="systemExempted"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:process=":bg"
+            tools:ignore="ForegroundServicePermission,VpnServicePolicy">
+            <intent-filter><action android:name="android.net.VpnService" /></intent-filter>
+        </service>
+        <service
+            android:name="xyz.zarazaex.olc.service.V2RayProxyOnlyService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":bg">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="proxy" />
+        </service>
+        <service
+            android:name="xyz.zarazaex.olc.service.QSTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_service_active"
+            android:label="@string/quick_toggle"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:process=":bg"
+            tools:targetApi="n">
+            <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+            <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE" android:value="true" />
+        </service>
+
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.cache"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/cache_paths" />
+        </provider>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="io.nekohasekai.sagernet.SagerNet"
+                android:value="androidx.startup" />
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <receiver
+            android:name="io.nekohasekai.sagernet.BootReceiver"
+            android:enabled="false"
+            android:exported="true"
+            android:process=":bg">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="androidx.room.MultiInstanceInvalidationService"
+            android:process=":bg" />
+
+        <receiver
+            android:name="io.nekohasekai.sagernet.tasker.TaskerReceiver"
+            android:exported="true"
+            android:process=":bg"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name="io.nekohasekai.sagernet.tasker.TaskerActivity"
+            android:excludeFromRecents="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.EDIT_SETTING" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>

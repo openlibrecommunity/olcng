@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_share"
+        android:title="@string/share">
+        <menu>
+            <item
+                android:id="@+id/action_clipboard"
+                android:title="@string/action_export_clipboard" />
+            <item
+                android:id="@+id/action_file"
+                android:title="@string/action_export_file" />
+            <item
+                android:id="@+id/action_subscription_link"
+                android:title="@string/group_subscription_link">
+                <menu>
+                    <item
+                        android:id="@+id/action_subscription_link_qr"
+                        android:title="@string/share_qr_nfc" />
+                    <item
+                        android:id="@+id/action_subscription_link_clipboard"
+                        android:title="@string/action_export_clipboard" />
+                </menu>
+            </item>
+            <item
+                android:id="@+id/action_export_backup_of_all_profiles"
+                android:visible="false"
+                android:title="@string/backup_all_profiles">
+                <menu>
+                    <item
+                        android:id="@+id/action_export_backup_of_all_profiles_clipboard"
+                        android:title="@string/action_export_clipboard" />
+                    <item
+                        android:id="@+id/action_export_backup_of_all_profiles_file"
+                        android:title="@string/action_export_file" />
+                </menu>
+            </item>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_clear"
+        android:title="@string/clear_profiles" />
+</menu>

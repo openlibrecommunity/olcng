@@ -1,0 +1,31 @@
+Exclave is a proxy client.
+
+Features:
+
+- Various proxy protocols
+- Group and subscription
+- Routing
+- Proxy chain
+
+Some supported protocols:
+
+- Shadowsocks (with SIP003 plugin support)
+- Shadowsocks 2022 (with SIP003 plugin support)
+- Trojan
+- Hysteria 2
+- AnyTLS
+- mieru
+- NaïveProxy (as a standalone plugin)
+- TUIC
+- Juicity
+- VMess (with various optional sub-protocols)
+- VLESS (with various optional sub-protocols)
+- WireGuard (TCP and UDP only)
+- TrustTunnel (no ICMP echo support)
+- Snell v4 and Snell v6
+- ShadowQUIC
+- SSH proxy ("dynamic port forwarding")
+- HTTP CONNECT tunnel (HTTP/1.1, HTTP/1.1 with TLS, HTTP/2 and HTTP/3)
+- SOCKS4, SOCKS4A and SOCKS5
+
+Although it can take charge of the traffic through the VPN service provided by the system, it is a TCP and UDP proxy used as a "pseudo-VPN" rather than a VPN.
